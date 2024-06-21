@@ -118,9 +118,9 @@ function MapComponent() {
 
     // Configura l'oggetto AWS SDK con le credenziali e la regione
     AWS.config.update({
-      accessKeyId: 'V/Hv/1R9uiLz5rvt8sj6r22yyuyBfL/X2Rj9BsGs',
-      secretAccessKey: 'AKIAW3MEDPDTV5NVTLUN',
-      region: 'eu-north-1'
+      accessKeyId: EnvironmentCredentials.accessKeyId,
+      secretAccessKey: EnvironmentCredentials.secretAccessKey,
+      region: EnvironmentCredentials.Location
     });
 
     // Crea un nuovo oggetto S3

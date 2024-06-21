@@ -10,9 +10,9 @@ const port = 5000;
 
 // Configura AWS SDK con le tue credenziali e regione
 AWS.config.update({
-  accessKeyId: 'AKIAW3MEDPDTV5NVTLUN',
-  secretAccessKey: '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',
-  region: 'eu-north-1' // es. 'eu-north-1'
+  accessKeyId: env.accessKeyId,
+  secretAccessKey:  env.secretAccessKey,
+  region: env.location// es. 'eu-north-1'
 });
 
 const s3 = new AWS.S3();
