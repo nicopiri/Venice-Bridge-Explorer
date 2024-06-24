@@ -4,8 +4,10 @@
   "private": true,
   "dependencies": {
     "@arcgis/core": "^4.29.10",
+    "@aws-sdk/client-cognito-identity": "^3.600.0",
     "@aws-sdk/client-lambda": "^3.600.0",
     "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/credential-providers": "^3.600.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -46,5 +48,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
   }
 }

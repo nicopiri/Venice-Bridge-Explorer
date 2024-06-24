@@ -5,12 +5,15 @@ import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
 import AWS from 'aws-sdk';
 
+const ACCESS_KEY_ID = 'AKIAW3MEDPDT57LOHIKL';
+const SECRET_ACCESS_KEY = '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';
+const REGION = 'eu-north-1';
+
 function MapComponent() {
   const [selectedBridge, setSelectedBridge] = useState(null);
   const [bridgeImages, setBridgeImages] = useState([]);
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const map = new Map({
@@ -20,44 +23,40 @@ function MapComponent() {
     const view = new MapView({
       container: 'mapView',
       map: map,
-      center: [12.3155, 45.4408], // Coordinate di Venezia
+      center: [12.3155, 45.4408],
       zoom: 14,
       popup: {
-        defaultPopupTemplateEnabled: false // Disabilita i popup di default
+        defaultPopupTemplateEnabled: false
       }
     });
 
     const featureLayer = new FeatureLayer({
       url: 'https://services7.arcgis.com/BEVijU9IvwRENrmx/arcgis/rest/services/bridges/FeatureServer/0',
-      outFields: ['birth_certificate_birthID', 'data_Bridge_Name', 'data_History'] // Campi da recuperare
+      outFields: ['birth_certificate_birthID', 'data_Bridge_Name', 'data_History']
     });
 
     map.add(featureLayer);
     mapViewRef.current = view;
 
-    // Aggiungi un gestore di eventi per il clic sulla mappa
     view.on("click", event => {
       view.hitTest(event).then(response => {
         if (response.results.length) {
           const graphic = response.results[0].graphic;
           if (graphic && graphic.attributes && graphic.attributes.birth_certificate_birthID) {
-            // Imposta il bridge selezionato nel state
             setSelectedBridge({
               name: graphic.attributes.data_Bridge_Name,
               description: graphic.attributes.data_History
             });
 
-            // Rimuovi il segnalino esistente
             if (highlightGraphicRef.current) {
               view.graphics.remove(highlightGraphicRef.current);
             }
 
-            // Aggiungi un nuovo segnalino
             const markerSymbol = {
               type: "simple-marker",
-              color: [226, 119, 40],  // arancione
+              color: [226, 119, 40],
               outline: {
-                color: [255, 255, 255],  // bianco
+                color: [255, 255, 255],
                 width: 2
               }
             };
@@ -70,10 +69,8 @@ function MapComponent() {
             view.graphics.add(pointGraphic);
             highlightGraphicRef.current = pointGraphic;
 
-            // Carica le immagini relative al ponte selezionato da S3
             loadBridgeImages(graphic.attributes.birth_certificate_birthID);
           } else {
-            // Resetta il ponte selezionato se nessun ponte valido è stato selezionato
             setSelectedBridge(null);
             setBridgeImages([]);
             if (highlightGraphicRef.current) {
@@ -87,63 +84,46 @@ function MapComponent() {
 
   }, []);
 
-  // Funzione per caricare le immagini relative al ponte da Amazon S3
   const loadBridgeImages = (bridgeID) => {
-    // Esempio di URL del bucket Amazon S3
     const bucketUrl = 'https://venicebridges.s3.eu-north-1.amazonaws.com/';
-
-    // Lista di nomi file immagini
     const imageNames = [
       `${bridgeID}_image1.jpg`,
       `${bridgeID}_image2.jpg`
-      // Aggiungi altri nomi file se necessario
     ];
 
-    // Crea URL completi per le immagini
     const images = imageNames.map(image => ({
       url: `${bucketUrl}${image}`,
       alt: `${bridgeID} Image`
     }));
 
-    // Imposta le immagini nello stato
     setBridgeImages(images);
   };
 
-  // Funzione per gestire il caricamento del file su S3
   const handleFileUpload = async (event) => {
-    event.preventDefault();
-    
-    // Ottieni il file selezionato dall'input
-    const file = fileInputRef.current.files[0];
+    const file = event.target.files[0];
+    if (!file) return;
 
-    // Configura l'oggetto AWS SDK con le credenziali e la regione
-    AWS.config.update({
-      accessKeyId: EnvironmentCredentials.accessKeyId,
-      secretAccessKey: EnvironmentCredentials.secretAccessKey,
-      region: EnvironmentCredentials.Location
+    const s3 = new AWS.S3({
+      accessKeyId: ACCESS_KEY_ID,
+      secretAccessKey: SECRET_ACCESS_KEY,
+      region: REGION
     });
 
-    // Crea un nuovo oggetto S3
-    const s3 = new AWS.S3();
-
-    // Configura i parametri per l'upload
     const params = {
       Bucket: 'venicebridges',
-      Key: file.name, // Nome del file nel bucket
+      Key: `${selectedBridge.name}/${file.name}`,
       Body: file,
-      ACL: 'public-read' // Opzionale: imposta l'accesso del file come pubblico
+      //ACL: 'public-read'
     };
 
     try {
-      // Esegui l'upload del file su S3
-      const data = await s3.upload(params).promise();
-      console.log('File uploaded successfully:', data.Location);
-      // Puoi gestire qui le operazioni post-upload (ad esempio, aggiornare lo stato del componente, notificare l'utente, etc.)
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      // Gestisci qui gli errori di upload
+      await s3.upload(params).promise();
+      alert('File uploaded successfully!');
+      loadBridgeImages(selectedBridge.name);
+    } catch (err) {
+      console.error('There was an error uploading your file: ', err.message);
     }
-  }; 
+  };
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
@@ -154,27 +134,20 @@ function MapComponent() {
             <h2>{selectedBridge.name}</h2>
             <p>{selectedBridge.description}</p>
             <div>
-              {bridgeImages.length > 0 ? (
-                bridgeImages.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image.url}
-                    alt={image.alt}
-                    style={{ maxWidth: '100%', marginBottom: '10px' }}
-                    onError={(e) => {
-                      e.target.onerror = null; // to avoid infinite loop in case "imageerror.png" also fails to load
-                      e.target.src = 'imageerror.png'; // fallback image
-                    }}
-                  />
-                ))
-              ) : (
-                <p>Nessuna immagine disponibile per questo ponte.</p>
-              )}
+              {bridgeImages.map((image, index) => (
+                <img
+                  key={index}
+                  src={image.url}
+                  alt={image.alt}
+                  style={{ maxWidth: '100%', marginBottom: '10px' }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'imageerror.png';
+                  }}
+                />
+              ))}
             </div>
-            <form onSubmit={handleFileUpload}>
-              <input type="file" ref={fileInputRef} />
-              <button type="submit">Carica Foto</button>
-            </form>
+            <input type="file" onChange={handleFileUpload} />
           </div>
         ) : (
           <p>Seleziona un ponte sulla mappa per vedere i dettagli</p>
