@@ -44,6 +44,7 @@ function MapComponent() {
           const graphic = response.results[0].graphic;
           if (graphic && graphic.attributes && graphic.attributes.birth_certificate_birthID) {
             setSelectedBridge({
+              id: graphic.attributes.birth_certificate_birthID,
               name: graphic.attributes.data_Bridge_Name,
               description: graphic.attributes.data_History
             });
@@ -84,46 +85,66 @@ function MapComponent() {
 
   }, []);
 
-  const loadBridgeImages = (bridgeID) => {
-    const bucketUrl = 'https://venicebridges.s3.eu-north-1.amazonaws.com/';
-    const imageNames = [
-      `${bridgeID}_image1.jpg`,
-      `${bridgeID}_image2.jpg`
-    ];
-
-    const images = imageNames.map(image => ({
-      url: `${bucketUrl}${image}`,
-      alt: `${bridgeID} Image`
-    }));
-
-    setBridgeImages(images);
-  };
-
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
+  const loadBridgeImages = async (bridgeID) => {
     const s3 = new AWS.S3({
       accessKeyId: accessKeyId,
       secretAccessKey: secretAccessKey,
       region: region
     });
 
-    const params = {
+    const listParams = {
       Bucket: 'venicebridges',
-      Key: `${selectedBridge.name}/${file.name}`,
-      Body: file
+      Prefix: `${bridgeID}_image`
     };
 
     try {
-      await s3.upload(params).promise();
+      const { Contents } = await s3.listObjectsV2(listParams).promise();
+      const imageNames = Contents.map(item => item.Key);
+      const images = imageNames.map(image => ({
+        url: `https://venicebridges.s3.eu-north-1.amazonaws.com/${image}`,
+        alt: `${bridgeID} Image`
+      }));
+      setBridgeImages(images);
+    } catch (err) {
+      console.error('There was an error loading images: ', err.message);
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !selectedBridge) return;
+  
+    const s3 = new AWS.S3({
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: region
+    });
+  
+    // Controlla se ci sono immagini esistenti per il ponte selezionato
+    const listParams = {
+      Bucket: 'venicebridges',
+      Prefix: `${selectedBridge.id}_image`
+    };
+  
+    try {
+      const { Contents } = await s3.listObjectsV2(listParams).promise();
+      const imageCount = Contents.length + 1;
+      const newFileName = `${selectedBridge.id}_image${imageCount}.jpg`;
+  
+      const uploadParams = {
+        Bucket: 'venicebridges',
+        Key: newFileName,
+        Body: file
+      };
+  
+      await s3.upload(uploadParams).promise();
       alert('File uploaded successfully!');
-      loadBridgeImages(selectedBridge.name);
+      loadBridgeImages(selectedBridge.id);
     } catch (err) {
       console.error('There was an error uploading your file: ', err.message);
     }
   };
-
+  
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
       <div id="mapView" style={{ flex: 1 }} />
