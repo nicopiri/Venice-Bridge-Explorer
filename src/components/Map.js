@@ -5,9 +5,9 @@ import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
 import AWS from 'aws-sdk';
 
-const ACCESS_KEY_ID = 'AKIAW3MEDPDT57LOHIKL';
-const SECRET_ACCESS_KEY = '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';
-const REGION = 'eu-north-1';
+const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
+const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
+const region = process.env.REACT_APP_AWS_REGION;
 
 function MapComponent() {
   const [selectedBridge, setSelectedBridge] = useState(null);
@@ -104,16 +104,15 @@ function MapComponent() {
     if (!file) return;
 
     const s3 = new AWS.S3({
-      accessKeyId: ACCESS_KEY_ID,
-      secretAccessKey: SECRET_ACCESS_KEY,
-      region: REGION
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: region
     });
 
     const params = {
       Bucket: 'venicebridges',
       Key: `${selectedBridge.name}/${file.name}`,
-      Body: file,
-      //ACL: 'public-read'
+      Body: file
     };
 
     try {
