@@ -154,18 +154,22 @@ function MapComponent() {
             <h2>{selectedBridge.name}</h2>
             <p>{selectedBridge.description}</p>
             <div>
-              {bridgeImages.map((image, index) => (
-                <img
-                  key={index}
-                  src={image.url}
-                  alt={image.alt}
-                  style={{ maxWidth: '100%', marginBottom: '10px' }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'imageerror.png';
-                  }}
-                />
-              ))}
+              {bridgeImages.length > 0 ? (
+                bridgeImages.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image.url}
+                    alt={image.alt}
+                    style={{ maxWidth: '100%', marginBottom: '10px' }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'imageerror.png';
+                    }}
+                  />
+                ))
+              ) : (
+                <p>Non ci sono immagini disponibili, caricane una!</p>
+              )}
             </div>
             <input type="file" onChange={handleFileUpload} />
           </div>
