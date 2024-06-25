@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
@@ -10,20 +10,28 @@ const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
 const region = process.env.REACT_APP_AWS_REGION;
 
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'password123';
+
 function MapComponent() {
   const [selectedBridge, setSelectedBridge] = useState(null);
   const [bridgeImages, setBridgeImages] = useState([]);
   const [userIP, setUserIP] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingImages, setPendingImages] = useState([]);
+  const [bridges, setBridges] = useState([]);
+  const [adminSelectedBridge, setAdminSelectedBridge] = useState('');
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
+  const mapRef = useRef(null);
 
-  useEffect(() => {
+  const initializeMap = useCallback(() => {
     const map = new Map({
       basemap: 'topo-vector'
     });
 
     const view = new MapView({
-      container: 'mapView',
+      container: mapRef.current,
       map: map,
       center: [12.3155, 45.4408],
       zoom: 14,
@@ -39,6 +47,15 @@ function MapComponent() {
 
     map.add(featureLayer);
     mapViewRef.current = view;
+
+    featureLayer.queryFeatures().then(result => {
+      const bridgeData = result.features.map(feature => ({
+        id: feature.attributes.birth_certificate_birthID,
+        name: feature.attributes.data_Bridge_Name
+      }));
+      bridgeData.sort((a, b) => a.name.localeCompare(b.name));
+      setBridges(bridgeData);
+    });
 
     view.on("click", event => {
       view.hitTest(event).then(response => {
@@ -84,8 +101,11 @@ function MapComponent() {
         }
       });
     });
+  }, []);
 
-    // Fetch user IP
+  useEffect(() => {
+    initializeMap();
+
     axios.get('https://api.ipify.org?format=json')
       .then(response => {
         setUserIP(response.data.ip);
@@ -93,8 +113,7 @@ function MapComponent() {
       .catch(error => {
         console.error('Error fetching user IP:', error);
       });
-
-  }, []);
+  }, [initializeMap]);
 
   const loadBridgeImages = async (bridgeID) => {
     const s3 = new AWS.S3({
@@ -125,10 +144,9 @@ function MapComponent() {
     const file = event.target.files[0];
     if (!file || !selectedBridge || !userIP) return;
 
-    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    const currentDate = new Date().toISOString().split('T')[0];
     const uploadKey = `upload_${userIP}_${selectedBridge.id}`;
 
-    // Check if the user has already uploaded 4 images today
     let uploadData;
     try {
       uploadData = JSON.parse(localStorage.getItem(uploadKey)) || {};
@@ -148,16 +166,112 @@ function MapComponent() {
       region: region
     });
 
-    // Controlla se ci sono immagini esistenti per il ponte selezionato
-    const listParams = {
-      Bucket: 'venicebridges',
-      Prefix: `${selectedBridge.id}_image`
-    };
+    try {
+      const { Contents } = await s3.listObjectsV2({
+        Bucket: 'venicebridges',
+        Prefix: `pending_${selectedBridge.id}_image`
+      }).promise();
+      const imageCount = Contents.length + 1;
+      const newFileName = `pending_${selectedBridge.id}_image${imageCount}.jpg`;
+
+      const uploadParams = {
+        Bucket: 'venicebridges',
+        Key: newFileName,
+        Body: file
+      };
+
+      await s3.upload(uploadParams).promise();
+      alert('File uploaded successfully! It will be reviewed by an admin.');
+
+      const newCount = date === currentDate ? count + 1 : 1;
+      localStorage.setItem(uploadKey, JSON.stringify({ date: currentDate, count: newCount }));
+    } catch (err) {
+      console.error('There was an error uploading your file: ', err.message);
+    }
+  };
+
+  const handleAdminLogin = () => {
+    const username = prompt('Enter admin username:');
+    const password = prompt('Enter admin password:');
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      loadPendingImages();
+    } else {
+      alert('Invalid credentials');
+    }
+  };
+
+  const loadPendingImages = async () => {
+    const s3 = new AWS.S3({
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: region
+    });
 
     try {
-      const { Contents } = await s3.listObjectsV2(listParams).promise();
+      const { Contents } = await s3.listObjectsV2({
+        Bucket: 'venicebridges',
+        Prefix: 'pending_'
+      }).promise();
+
+      const pendingImages = Contents.map(item => ({
+        key: item.Key,
+        url: `https://venicebridges.s3.eu-north-1.amazonaws.com/${item.Key}`
+      }));
+
+      setPendingImages(pendingImages);
+    } catch (err) {
+      console.error('Error loading pending images:', err);
+    }
+  };
+
+  const handleImageApproval = async (imageKey, approved) => {
+    const s3 = new AWS.S3({
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: region
+    });
+
+    try {
+      if (approved) {
+        const newKey = imageKey.replace('pending_', '');
+        await s3.copyObject({
+          Bucket: 'venicebridges',
+          CopySource: `venicebridges/${imageKey}`,
+          Key: newKey
+        }).promise();
+      }
+
+      await s3.deleteObject({
+        Bucket: 'venicebridges',
+        Key: imageKey
+      }).promise();
+
+      loadPendingImages();
+    } catch (err) {
+      console.error('Error handling image approval:', err);
+    }
+  };
+
+  const handleAdminFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !adminSelectedBridge) return;
+
+    const s3 = new AWS.S3({
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: region
+    });
+
+    try {
+      const { Contents } = await s3.listObjectsV2({
+        Bucket: 'venicebridges',
+        Prefix: `${adminSelectedBridge}_image`
+      }).promise();
+
       const imageCount = Contents.length + 1;
-      const newFileName = `${selectedBridge.id}_image${imageCount}.jpg`;
+      const newFileName = `${adminSelectedBridge}_image${imageCount}.jpg`;
 
       const uploadParams = {
         Bucket: 'venicebridges',
@@ -167,56 +281,99 @@ function MapComponent() {
 
       await s3.upload(uploadParams).promise();
       alert('File uploaded successfully!');
-      loadBridgeImages(selectedBridge.id);
-
-      // Update the upload count
-      const newCount = date === currentDate ? count + 1 : 1;
-      localStorage.setItem(uploadKey, JSON.stringify({ date: currentDate, count: newCount }));
     } catch (err) {
       console.error('There was an error uploading your file: ', err.message);
     }
   };
 
+  const handleAdminLogout = useCallback(() => {
+    setIsAdmin(false);
+    setAdminSelectedBridge(null);
+    setTimeout(() => {
+      initializeMap();
+    }, 0);
+  }, [initializeMap]);
+
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
-      <div id="mapView" style={{ flex: 1 }} />
-      <div style={{ flex: 1, padding: '20px', backgroundColor: '#f4f4f4', overflowY: 'auto' }}>
-        {selectedBridge ? (
-          <div>
-            <h2>{selectedBridge.name}</h2>
-            <p>{selectedBridge.description}</p>
-            <div>
-              {bridgeImages.length > 0 ? (
-                bridgeImages.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image.url}
-                    alt={image.alt}
-                    style={{ maxWidth: '100%', marginBottom: '10px' }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'imageerror.png';
-                    }}
+    <div style={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
+      {!isAdmin ? (
+        <>
+          <div style={{ display: 'flex', height: '100%' }}>
+            <div ref={mapRef} style={{ flex: 1 }} />
+            <div style={{ flex: 1, padding: '20px', backgroundColor: '#f4f4f4', overflowY: 'auto' }}>
+              {selectedBridge ? (
+                <div>
+                  <h2>{selectedBridge.name}</h2>
+                  <p>{selectedBridge.description}</p>
+                  <div>
+                    {bridgeImages.length > 0 ? (
+                      bridgeImages.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image.url}
+                          alt={image.alt}
+                          style={{ maxWidth: '100%', marginBottom: '10px' }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'imageerror.png';
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <p>No images available, upload one!</p>
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    id="fileUpload" 
+                    style={{ display: 'none' }} 
+                    onChange={handleFileUpload} 
                   />
-                ))
+                  <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
+                    Choose file to upload
+                  </label>
+                </div>
               ) : (
-                <p>No images available, upload one!</p>
+                <p>Select a bridge on the map to see details</p>
               )}
+              <button onClick={handleAdminLogin}>Admin Login</button>
             </div>
+          </div>
+        </>
+      ) : (
+        <div style={{ padding: '20px', backgroundColor: '#f4f4f4', overflowY: 'auto', height: '100%' }}>
+          <h2>Admin Panel</h2>
+          <button onClick={handleAdminLogout}>Back to Main Page</button>
+          
+          <div style={{ marginTop: '20px' }}>
+            <h3>Upload Image Directly</h3>
+            <select 
+              value={adminSelectedBridge} 
+              onChange={(e) => setAdminSelectedBridge(e.target.value)}
+              style={{ marginRight: '10px' }}
+            >
+              <option value="">Select a bridge</option>
+              {bridges.map(bridge => (
+                <option key={bridge.id} value={bridge.id}>{bridge.name}</option>
+              ))}
+            </select>
             <input 
               type="file" 
-              id="fileUpload" 
-              style={{ display: 'none' }} 
-              onChange={handleFileUpload} 
+              onChange={handleAdminFileUpload}
+              disabled={!adminSelectedBridge}
             />
-            <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
-              Choose file to upload
-            </label>
           </div>
-        ) : (
-          <p>Select a bridge on the map to see details</p>
-        )}
-      </div>
+
+          <h3>Pending Images</h3>
+          {pendingImages.map((image, index) => (
+            <div key={index} style={{ marginBottom: '20px' }}>
+              <img src={image.url} alt="Pending" style={{ maxWidth: '100%' }} />
+              <button onClick={() => handleImageApproval(image.key, true)}>Approve</button>
+              <button onClick={() => handleImageApproval(image.key, false)}>Reject</button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
