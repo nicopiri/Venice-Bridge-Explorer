@@ -4,6 +4,7 @@ import MapView from "@arcgis/core/views/MapView";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
 import AWS from 'aws-sdk';
+import axios from 'axios';
 
 const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
@@ -12,6 +13,7 @@ const region = process.env.REACT_APP_AWS_REGION;
 function MapComponent() {
   const [selectedBridge, setSelectedBridge] = useState(null);
   const [bridgeImages, setBridgeImages] = useState([]);
+  const [userIP, setUserIP] = useState(null);
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
 
@@ -83,6 +85,15 @@ function MapComponent() {
       });
     });
 
+    // Fetch user IP
+    axios.get('https://api.ipify.org?format=json')
+      .then(response => {
+        setUserIP(response.data.ip);
+      })
+      .catch(error => {
+        console.error('Error fetching user IP:', error);
+      });
+
   }, []);
 
   const loadBridgeImages = async (bridgeID) => {
@@ -112,39 +123,60 @@ function MapComponent() {
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
-    if (!file || !selectedBridge) return;
-  
+    if (!file || !selectedBridge || !userIP) return;
+
+    const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    const uploadKey = `upload_${userIP}_${selectedBridge.id}`;
+
+    // Check if the user has already uploaded 4 images today
+    let uploadData;
+    try {
+      uploadData = JSON.parse(localStorage.getItem(uploadKey)) || {};
+    } catch (e) {
+      uploadData = {};
+    }
+    const { date, count } = uploadData;
+
+    if (date === currentDate && count >= 4) {
+      alert('You can only upload up to 4 images per bridge per day.');
+      return;
+    }
+
     const s3 = new AWS.S3({
       accessKeyId: accessKeyId,
       secretAccessKey: secretAccessKey,
       region: region
     });
-  
+
     // Controlla se ci sono immagini esistenti per il ponte selezionato
     const listParams = {
       Bucket: 'venicebridges',
       Prefix: `${selectedBridge.id}_image`
     };
-  
+
     try {
       const { Contents } = await s3.listObjectsV2(listParams).promise();
       const imageCount = Contents.length + 1;
       const newFileName = `${selectedBridge.id}_image${imageCount}.jpg`;
-  
+
       const uploadParams = {
         Bucket: 'venicebridges',
         Key: newFileName,
         Body: file
       };
-  
+
       await s3.upload(uploadParams).promise();
       alert('File uploaded successfully!');
       loadBridgeImages(selectedBridge.id);
+
+      // Update the upload count
+      const newCount = date === currentDate ? count + 1 : 1;
+      localStorage.setItem(uploadKey, JSON.stringify({ date: currentDate, count: newCount }));
     } catch (err) {
       console.error('There was an error uploading your file: ', err.message);
     }
   };
-  
+
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
       <div id="mapView" style={{ flex: 1 }} />
@@ -168,13 +200,21 @@ function MapComponent() {
                   />
                 ))
               ) : (
-                <p>Non ci sono immagini disponibili, caricane una!</p>
+                <p>No images available, upload one!</p>
               )}
             </div>
-            <input type="file" onChange={handleFileUpload} />
+            <input 
+              type="file" 
+              id="fileUpload" 
+              style={{ display: 'none' }} 
+              onChange={handleFileUpload} 
+            />
+            <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
+              Choose file to upload
+            </label>
           </div>
         ) : (
-          <p>Seleziona un ponte sulla mappa per vedere i dettagli</p>
+          <p>Select a bridge on the map to see details</p>
         )}
       </div>
     </div>
