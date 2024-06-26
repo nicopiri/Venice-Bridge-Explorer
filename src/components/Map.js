@@ -116,54 +116,6 @@ function MapComponent() {
       });
   }, [initializeMap]);
 
-  const showUserLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          let { latitude, longitude } = position.coords;
-
-         // latitude +=  (670 / 111111);
-
-          //longitude -= (75 / (111111 * Math.cos(latitude * Math.PI / 180)));
-          
-          setUserLocation({ latitude, longitude });
-          
-          if (mapViewRef.current) {
-            const point = {
-              type: "point",
-              longitude: longitude,
-              latitude: latitude
-            };
-            
-            const markerSymbol = {
-              type: "simple-marker",
-              color: [0, 102, 255],
-              outline: {
-                color: [255, 255, 255],
-                width: 2
-              }
-            };
-            
-            const userLocationGraphic = new Graphic({
-              geometry: point,
-              symbol: markerSymbol
-            });
-            
-            mapViewRef.current.graphics.removeAll();
-            mapViewRef.current.graphics.add(userLocationGraphic);
-            mapViewRef.current.center = [longitude, latitude];
-            mapViewRef.current.zoom = 15;
-          }
-        },
-        (error) => {
-          console.error("Errore nel recupero della posizione dell'utente:", error);
-          alert("Impossibile recuperare la tua posizione. Assicurati di aver concesso il permesso di accesso alla tua posizione.");
-        }
-      );
-    } else {
-      alert("La geolocalizzazione non è supportata dal tuo browser.");
-    }
-  };
 
   const loadBridgeImages = async (bridgeID) => {
     const s3 = new AWS.S3({
@@ -315,18 +267,76 @@ function MapComponent() {
     return R * c;
   };
 
+  const showUserLocation = () => {
+    return new Promise((resolve, reject) => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            let { latitude, longitude } = position.coords;
+            //correzione coordinate 
+            latitude +=  (670 / 111111);
+            longitude -= (75 / (111111 * Math.cos(latitude * Math.PI / 180))); 
+            
+            const newLocation = { latitude, longitude };
+            setUserLocation(newLocation);
+            
+            if (mapViewRef.current) {
+              const point = {
+                type: "point",
+                longitude: longitude,
+                latitude: latitude
+              };
+              
+              const markerSymbol = {
+                type: "simple-marker",
+                color: [0, 102, 255],
+                outline: {
+                  color: [255, 255, 255],
+                  width: 2
+                }
+              };
+              
+              const userLocationGraphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol
+              });
+              
+              mapViewRef.current.graphics.removeAll();
+              mapViewRef.current.graphics.add(userLocationGraphic);
+              mapViewRef.current.center = [longitude, latitude];
+              mapViewRef.current.zoom = 15;
+            }
+            resolve(newLocation);
+          },
+          (error) => {
+            console.error("Errore nel recupero della posizione dell'utente:", error);
+            alert("Impossibile recuperare la tua posizione. Assicurati di aver concesso il permesso di accesso alla tua posizione.");
+            reject(error);
+          }
+        );
+      } else {
+        alert("La geolocalizzazione non è supportata dal tuo browser.");
+        reject(new Error("Geolocation not supported"));
+      }
+    });
+  };
+
   const findNearestBridge = async () => {
-    if (!userLocation) {
-      alert("Per favore, prima mostra la tua posizione sulla mappa.");
-      return;
-    }
-  
-    const featureLayer = mapViewRef.current.map.layers.getItemAt(0);
-    const query = featureLayer.createQuery();
-    query.outFields = ["*"];
-    query.returnGeometry = true;
-  
     try {
+      let location = userLocation;
+      if (!location) {
+        location = await showUserLocation();
+      }
+  
+      if (!location) {
+        throw new Error("Impossibile ottenere la posizione dell'utente");
+      }
+  
+      const featureLayer = mapViewRef.current.map.layers.getItemAt(0);
+      const query = featureLayer.createQuery();
+      query.outFields = ["*"];
+      query.returnGeometry = true;
+  
       const results = await featureLayer.queryFeatures(query);
       let nearestBridge = null;
       let shortestDistance = Infinity;
@@ -335,7 +345,7 @@ function MapComponent() {
         const bridgeLat = feature.geometry.latitude;
         const bridgeLon = feature.geometry.longitude;
         const distance = calculateDistance(
-          userLocation.latitude, userLocation.longitude,
+          location.latitude, location.longitude,
           bridgeLat, bridgeLon
         );
   
@@ -382,7 +392,7 @@ function MapComponent() {
       }
     } catch (error) {
       console.error("Errore nel trovare il ponte più vicino:", error);
-      alert("Si è verificato un errore nel trovare il ponte più vicino.");
+      alert("Si è verificato un errore nel trovare il ponte più vicino. Per favore, riprova.");
     }
   };
 
