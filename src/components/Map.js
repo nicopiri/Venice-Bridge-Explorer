@@ -10,6 +10,7 @@ const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
 const region = process.env.REACT_APP_AWS_REGION;
 
+
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'password123';
 
@@ -42,7 +43,7 @@ function MapComponent() {
     });
 
     const featureLayer = new FeatureLayer({
-      url: 'https://services7.arcgis.com/BEVijU9IvwRENrmx/arcgis/rest/services/bridges/FeatureServer/0',
+      url: 'https://services7.arcgis.com/BEVijU9IvwRENrmx/arcgis/rest/services/bridges/FeatureServer',
       outFields: ['birth_certificate_birthID', 'data_Bridge_Name', 'data_History']
     });
 
