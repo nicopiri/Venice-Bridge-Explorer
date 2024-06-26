@@ -21,6 +21,7 @@ function MapComponent() {
   const [pendingImages, setPendingImages] = useState([]);
   const [bridges, setBridges] = useState([]);
   const [adminSelectedBridge, setAdminSelectedBridge] = useState('');
+  const [userLocation, setUserLocation] = useState(null);
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
   const mapRef = useRef(null);
@@ -114,6 +115,55 @@ function MapComponent() {
         console.error('Error fetching user IP:', error);
       });
   }, [initializeMap]);
+
+  const showUserLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          let { latitude, longitude } = position.coords;
+
+         // latitude +=  (670 / 111111);
+
+          //longitude -= (75 / (111111 * Math.cos(latitude * Math.PI / 180)));
+          
+          setUserLocation({ latitude, longitude });
+          
+          if (mapViewRef.current) {
+            const point = {
+              type: "point",
+              longitude: longitude,
+              latitude: latitude
+            };
+            
+            const markerSymbol = {
+              type: "simple-marker",
+              color: [0, 102, 255],
+              outline: {
+                color: [255, 255, 255],
+                width: 2
+              }
+            };
+            
+            const userLocationGraphic = new Graphic({
+              geometry: point,
+              symbol: markerSymbol
+            });
+            
+            mapViewRef.current.graphics.removeAll();
+            mapViewRef.current.graphics.add(userLocationGraphic);
+            mapViewRef.current.center = [longitude, latitude];
+            mapViewRef.current.zoom = 15;
+          }
+        },
+        (error) => {
+          console.error("Errore nel recupero della posizione dell'utente:", error);
+          alert("Impossibile recuperare la tua posizione. Assicurati di aver concesso il permesso di accesso alla tua posizione.");
+        }
+      );
+    } else {
+      alert("La geolocalizzazione non è supportata dal tuo browser.");
+    }
+  };
 
   const loadBridgeImages = async (bridgeID) => {
     const s3 = new AWS.S3({
@@ -254,6 +304,89 @@ function MapComponent() {
     }
   };
 
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Raggio della Terra in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  const findNearestBridge = async () => {
+    if (!userLocation) {
+      alert("Per favore, prima mostra la tua posizione sulla mappa.");
+      return;
+    }
+  
+    const featureLayer = mapViewRef.current.map.layers.getItemAt(0);
+    const query = featureLayer.createQuery();
+    query.outFields = ["*"];
+    query.returnGeometry = true;
+  
+    try {
+      const results = await featureLayer.queryFeatures(query);
+      let nearestBridge = null;
+      let shortestDistance = Infinity;
+  
+      results.features.forEach(feature => {
+        const bridgeLat = feature.geometry.latitude;
+        const bridgeLon = feature.geometry.longitude;
+        const distance = calculateDistance(
+          userLocation.latitude, userLocation.longitude,
+          bridgeLat, bridgeLon
+        );
+  
+        if (distance < shortestDistance) {
+          shortestDistance = distance;
+          nearestBridge = feature;
+        }
+      });
+  
+      if (nearestBridge) {
+        setSelectedBridge({
+          id: nearestBridge.attributes.birth_certificate_birthID,
+          name: nearestBridge.attributes.data_Bridge_Name,
+          description: nearestBridge.attributes.data_History
+        });
+  
+        if (highlightGraphicRef.current) {
+          mapViewRef.current.graphics.remove(highlightGraphicRef.current);
+        }
+  
+        const markerSymbol = {
+          type: "simple-marker",
+          color: [226, 119, 40],
+          outline: {
+            color: [255, 255, 255],
+            width: 2
+          }
+        };
+  
+        const pointGraphic = new Graphic({
+          geometry: nearestBridge.geometry,
+          symbol: markerSymbol
+        });
+  
+        mapViewRef.current.graphics.add(pointGraphic);
+        highlightGraphicRef.current = pointGraphic;
+  
+        mapViewRef.current.center = [nearestBridge.geometry.longitude, nearestBridge.geometry.latitude];
+        mapViewRef.current.zoom = 16;
+  
+        loadBridgeImages(nearestBridge.attributes.birth_certificate_birthID);
+      } else {
+        alert("Nessun ponte trovato nelle vicinanze.");
+      }
+    } catch (error) {
+      console.error("Errore nel trovare il ponte più vicino:", error);
+      alert("Si è verificato un errore nel trovare il ponte più vicino.");
+    }
+  };
+
+
   const handleAdminFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file || !adminSelectedBridge) return;
@@ -336,7 +469,9 @@ function MapComponent() {
               ) : (
                 <p>Select a bridge on the map to see details</p>
               )}
+               <button onClick={showUserLocation}>Show My Location</button>
               <button onClick={handleAdminLogin}>Admin Login</button>
+              <button onClick={findNearestBridge}>Trova il ponte più vicino</button>
             </div>
           </div>
         </>
