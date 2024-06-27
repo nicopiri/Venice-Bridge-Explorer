@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
-import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
 import AWS from 'aws-sdk';
 import axios from 'axios';
+import WebMap from "@arcgis/core/WebMap";
 
 const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
@@ -28,71 +27,101 @@ function MapComponent() {
   const mapRef = useRef(null);
 
   const initializeMap = useCallback(() => {
-    const map = new Map({
-      basemap: 'topo-vector'
+    const webmap = new WebMap({
+      portalItem: {
+        id: "4ea81c99765144f6a522ecfa429518e0"
+      }
     });
-
+  
     const view = new MapView({
       container: mapRef.current,
-      map: map,
-      center: [12.3155, 45.4408],
-      zoom: 14,
+      map: webmap,
       popup: {
         defaultPopupTemplateEnabled: false
       }
     });
-
-    const featureLayer = new FeatureLayer({
-      url: 'https://services7.arcgis.com/BEVijU9IvwRENrmx/arcgis/rest/services/bridges/FeatureServer',
-      outFields: ['birth_certificate_birthID', 'data_Bridge_Name', 'data_History']
-    });
-
-    map.add(featureLayer);
+  
     mapViewRef.current = view;
+  
+    view.when(() => {
+      const featureLayer = webmap.layers.find(layer => layer.type === "feature");
+      
+      if (featureLayer) {
+        featureLayer.queryFeatures().then(result => {
+          const bridgeData = result.features.map(feature => ({
+            id: feature.attributes.birth_certificate_birthID,
+            name: feature.attributes.data_Bridge_Name
+          }));
+          bridgeData.sort((a, b) => a.name.localeCompare(b.name));
+          setBridges(bridgeData);
+        });
+        
+        featureLayer.highlightOptions = { color: [0, 0, 0, 0], fillOpacity: 0 };
 
-    featureLayer.queryFeatures().then(result => {
-      const bridgeData = result.features.map(feature => ({
-        id: feature.attributes.birth_certificate_birthID,
-        name: feature.attributes.data_Bridge_Name
-      }));
-      bridgeData.sort((a, b) => a.name.localeCompare(b.name));
-      setBridges(bridgeData);
-    });
+        view.on("click", async (event) => {
+                  
+          const featureLayer = view.map.layers.find(layer => layer.type === "feature");
+                  
+          const { results } = await view.hitTest(event);
+                  
+          const graphicHit = results.find(result => result.graphic.layer === featureLayer);
+          
+          if (graphicHit) {
+                  
+            // Usa l'ObjectId per eseguire una query e ottenere tutti gli attributi
+            const query = featureLayer.createQuery();
+            query.objectIds = [graphicHit.graphic.attributes.ObjectId];
+            query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History"];
+        
+            try {
+              const queryResult = await featureLayer.queryFeatures(query);
+      
+        
+              if (queryResult.features.length > 0) {
+                const feature = queryResult.features[0];
+                       
+                const selectedBridgeInfo = {
+                  id: feature.attributes.birth_certificate_birthID,
+                  name: feature.attributes.data_Bridge_Name,
+                  description: feature.attributes.data_History
+                };
+     
+                setSelectedBridge(selectedBridgeInfo);
+        
+                // Aggiungi qui il codice per l'evidenziazione
+                if (highlightGraphicRef.current) {
+                  view.graphics.remove(highlightGraphicRef.current);
+                }
+        
+                const markerSymbol = {
+                  type: "simple-marker",
+                  color: [226, 119, 40],
+                  outline: {
+                    color: [255, 255, 255],
+                    width: 2
+                  }
+                };
+        
+                const pointGraphic = new Graphic({
+                  geometry: feature.geometry,
+                  symbol: markerSymbol
+                });
+        
+                view.graphics.add(pointGraphic);
+                highlightGraphicRef.current = pointGraphic;
 
-    view.on("click", event => {
-      view.hitTest(event).then(response => {
-        if (response.results.length) {
-          const graphic = response.results[0].graphic;
-          if (graphic && graphic.attributes && graphic.attributes.birth_certificate_birthID) {
-            setSelectedBridge({
-              id: graphic.attributes.birth_certificate_birthID,
-              name: graphic.attributes.data_Bridge_Name,
-              description: graphic.attributes.data_History
-            });
-
-            if (highlightGraphicRef.current) {
-              view.graphics.remove(highlightGraphicRef.current);
-            }
-
-            const markerSymbol = {
-              type: "simple-marker",
-              color: [226, 119, 40],
-              outline: {
-                color: [255, 255, 255],
-                width: 2
+                  // Centra la vista sul ponte selezionato
+                  view.goTo({ target: feature.geometry, zoom: view.zoom });
+        
+                loadBridgeImages(feature.attributes.birth_certificate_birthID);
+              } else {
+                console.log("No features found in query result");
               }
-            };
-
-            const pointGraphic = new Graphic({
-              geometry: graphic.geometry,
-              symbol: markerSymbol
-            });
-
-            view.graphics.add(pointGraphic);
-            highlightGraphicRef.current = pointGraphic;
-
-            loadBridgeImages(graphic.attributes.birth_certificate_birthID);
+            } catch (error) {
+              console.error("Error querying feature details:", error);
+            }
           } else {
+            console.log("No valid graphic hit");
             setSelectedBridge(null);
             setBridgeImages([]);
             if (highlightGraphicRef.current) {
@@ -100,8 +129,10 @@ function MapComponent() {
               highlightGraphicRef.current = null;
             }
           }
-        }
-      });
+        });
+      } else {
+        console.error("Feature layer not found in the web map");
+      }
     });
   }, []);
 
@@ -335,7 +366,7 @@ function MapComponent() {
   
       const featureLayer = mapViewRef.current.map.layers.getItemAt(0);
       const query = featureLayer.createQuery();
-      query.outFields = ["*"];
+      query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History"];
       query.returnGeometry = true;
   
       const results = await featureLayer.queryFeatures(query);
@@ -480,7 +511,7 @@ function MapComponent() {
               ) : (
                 <p>Select a bridge on the map to see details</p>
               )}
-               <button onClick={showUserLocation}>Show My Location</button>
+              <button onClick={showUserLocation}>Show My Location</button>
               <button onClick={handleAdminLogin}>Admin Login</button>
               <button onClick={findNearestBridge}>Trova il ponte più vicino</button>
             </div>
