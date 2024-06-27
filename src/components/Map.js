@@ -36,6 +36,8 @@ function MapComponent() {
     const view = new MapView({
       container: mapRef.current,
       map: webmap,
+      center: [12.3155, 45.4408], // Coordinates for Venice
+      zoom: 13, // Appropriate zoom level for city view
       popup: {
         defaultPopupTemplateEnabled: false
       }
@@ -111,7 +113,7 @@ function MapComponent() {
                 highlightGraphicRef.current = pointGraphic;
 
                   // Centra la vista sul ponte selezionato
-                  view.goTo({ target: feature.geometry, zoom: view.zoom });
+                 // view.goTo({ target: feature.geometry, zoom: view.zoom });
         
                 loadBridgeImages(feature.attributes.birth_certificate_birthID);
               } else {
