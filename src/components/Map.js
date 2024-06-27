@@ -324,8 +324,8 @@ function MapComponent() {
           (position) => {
             let { latitude, longitude } = position.coords;
             //correzione coordinate 
-            latitude +=  (670 / 111111);
-            longitude -= (75 / (111111 * Math.cos(latitude * Math.PI / 180))); 
+            //latitude +=  (670 / 111111);
+            //longitude -= (75 / (111111 * Math.cos(latitude * Math.PI / 180))); 
             
             const newLocation = { latitude, longitude };
             setUserLocation(newLocation);
@@ -487,6 +487,47 @@ function MapComponent() {
     }, 0);
   }, [initializeMap]);
 
+  const decodeHtmlEntities = (text) => {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+  };
+  
+  const italianCharMap = {
+    'Ã ': 'à',
+    'Ã¨': 'è',
+    'Ã©': 'é',
+    'Ã¬': 'ì',
+    'Ã²': 'ò',
+    'Ã¹': 'ù',
+    'Ã€': 'À',
+    'Ãˆ': 'È',
+    'Ã‰': 'É',
+    'ÃŒ': 'Ì',
+    'Ã':  'Ò',
+    'Ã™': 'Ù'
+    // Aggiungi altri mapping se necessario
+  };
+  
+  const sanitizeText = (text) => {
+    console.log('Raw text:', text); // Log del testo raw
+  
+    // Decodifica le entità HTML
+    let decodedText = decodeHtmlEntities(text);
+  
+    // Sostituisci i caratteri problematici
+    Object.keys(italianCharMap).forEach(key => {
+      decodedText = decodedText.replace(new RegExp(key, 'g'), italianCharMap[key]);
+    });
+  
+    // Sostituisci i punti interrogativi rimanenti con spazi
+    decodedText = decodedText.replace('�', ' ');
+  
+    console.log('Processed text:', decodedText); // Log del testo elaborato
+  
+    return decodedText;
+  };
+  
   return (
     <div style={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
       {!isAdmin ? (
@@ -497,7 +538,7 @@ function MapComponent() {
               {selectedBridge ? (
                 <div>
                   <h2>{selectedBridge.name}</h2>
-                  <p>{selectedBridge.description}</p>
+                  <p>{sanitizeText(selectedBridge.description)}</p>
                   <div>
                     {bridgeImages.length > 0 ? (
                       bridgeImages.map((image, index) => (
