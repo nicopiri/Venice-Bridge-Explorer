@@ -266,22 +266,38 @@ function MapComponent() {
       secretAccessKey: secretAccessKey,
       region: region
     });
-
+  
     try {
       if (approved) {
-        const newKey = imageKey.replace('pending_', '');
+        // Extract the bridge ID from the image key
+        const bridgeId = imageKey.split('_')[1];
+        
+        // Get the current list of images for this bridge
+        const { Contents } = await s3.listObjectsV2({
+          Bucket: 'venicebridges',
+          Prefix: `${bridgeId}_image`
+        }).promise();
+  
+        // Calculate the new image number
+        const imageCount = Contents.length + 1;
+        
+        // Create the new key with the correct enumeration
+        const newKey = `${bridgeId}_image${imageCount}.jpg`;
+  
+        // Copy the object with the new key
         await s3.copyObject({
           Bucket: 'venicebridges',
           CopySource: `venicebridges/${imageKey}`,
           Key: newKey
         }).promise();
       }
-
+  
+      // Delete the pending image
       await s3.deleteObject({
         Bucket: 'venicebridges',
         Key: imageKey
       }).promise();
-
+  
       loadPendingImages();
     } catch (err) {
       console.error('Error handling image approval:', err);
