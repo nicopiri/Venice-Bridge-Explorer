@@ -37,8 +37,8 @@ function MapComponent() {
     const view = new MapView({
       container: mapRef.current,
       map: webmap,
-      center: [12.3155, 45.4408], // Coordinates for Venice
-      zoom: 13, // Appropriate zoom level for city view
+      center: [12.3350, 45.4350], // Coordinates for Venice
+      zoom: 14, // Appropriate zoom level for city view
       popup: {
         defaultPopupTemplateEnabled: false
       }
@@ -412,9 +412,9 @@ function MapComponent() {
   
               const markerSymbol = {
                 type: "picture-marker",  // Cambia il tipo a "picture-marker"
-                url: "/marker.png",  // Sostituisci con il percorso dell'immagine PNG
-                width: "40px",  // Imposta la larghezza desiderata
-                height: "45px"  // Imposta l'altezza desiderata
+                url: "/dock_outlined.png",  // Sostituisci con il percorso dell'immagine PNG
+                width: "20px",  // Imposta la larghezza desiderata
+                height: "60px"  // Imposta l'altezza desiderata
               };
   
         const pointGraphic = new Graphic({
