@@ -4,6 +4,7 @@ import Graphic from "@arcgis/core/Graphic";
 import AWS from 'aws-sdk';
 import axios from 'axios';
 import WebMap from "@arcgis/core/WebMap";
+import MapComponentUI from './MapComponentUI';
 
 const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
@@ -25,8 +26,8 @@ function MapComponent() {
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
   const mapRef = useRef(null);
-
   const initializeMap = useCallback(() => {
+  
     const webmap = new WebMap({
       portalItem: {
         id: "4ea81c99765144f6a522ecfa429518e0"
@@ -47,7 +48,7 @@ function MapComponent() {
   
     view.when(() => {
       const featureLayer = webmap.layers.find(layer => layer.type === "feature");
-      
+  
       if (featureLayer) {
         featureLayer.queryFeatures().then(result => {
           const bridgeData = result.features.map(feature => ({
@@ -57,64 +58,60 @@ function MapComponent() {
           bridgeData.sort((a, b) => a.name.localeCompare(b.name));
           setBridges(bridgeData);
         });
-        
+  
         featureLayer.highlightOptions = { color: [0, 0, 0, 0], fillOpacity: 0 };
-
+  
         view.on("click", async (event) => {
-                  
           const featureLayer = view.map.layers.find(layer => layer.type === "feature");
-                  
+  
           const { results } = await view.hitTest(event);
-                  
+  
           const graphicHit = results.find(result => result.graphic.layer === featureLayer);
-          
+  
           if (graphicHit) {
-                  
             // Usa l'ObjectId per eseguire una query e ottenere tutti gli attributi
             const query = featureLayer.createQuery();
             query.objectIds = [graphicHit.graphic.attributes.ObjectId];
             query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History"];
-        
+  
             try {
               const queryResult = await featureLayer.queryFeatures(query);
-      
-        
+  
               if (queryResult.features.length > 0) {
                 const feature = queryResult.features[0];
-                       
+  
                 const selectedBridgeInfo = {
                   id: feature.attributes.birth_certificate_birthID,
                   name: feature.attributes.data_Bridge_Name,
                   description: feature.attributes.data_History
                 };
-     
+  
                 setSelectedBridge(selectedBridgeInfo);
-        
-                // Aggiungi qui il codice per l'evidenziazione
+  
+                // Rimuovi eventuali grafiche di evidenziazione precedenti
                 if (highlightGraphicRef.current) {
                   view.graphics.remove(highlightGraphicRef.current);
                 }
-        
+  
+                // Definisci il simbolo del marker con un'immagine
                 const markerSymbol = {
-                  type: "simple-marker",
-                  color: [226, 119, 40],
-                  outline: {
-                    color: [255, 255, 255],
-                    width: 2
-                  }
+                  type: "picture-marker",
+                  url: "/dock_outlined.png",  // Percorso relativo alla root del server
+                  width: "20px",  // Imposta la larghezza desiderata
+                  height: "60px"  // Imposta l'altezza desiderata
                 };
-        
+  
                 const pointGraphic = new Graphic({
                   geometry: feature.geometry,
                   symbol: markerSymbol
                 });
-        
+  
                 view.graphics.add(pointGraphic);
                 highlightGraphicRef.current = pointGraphic;
-
-                  // Centra la vista sul ponte selezionato
-                 // view.goTo({ target: feature.geometry, zoom: view.zoom });
-        
+  
+                // Centra la vista sul ponte selezionato
+                view.goTo({ target: feature.geometry, zoom: view.zoom });
+  
                 loadBridgeImages(feature.attributes.birth_certificate_birthID);
               } else {
                 console.log("No features found in query result");
@@ -137,6 +134,7 @@ function MapComponent() {
       }
     });
   }, []);
+  
 
   useEffect(() => {
     initializeMap();
@@ -323,10 +321,7 @@ function MapComponent() {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             let { latitude, longitude } = position.coords;
-            //correzione coordinate 
-            //latitude +=  (670 / 111111);
-            //longitude -= (75 / (111111 * Math.cos(latitude * Math.PI / 180))); 
-            
+  
             const newLocation = { latitude, longitude };
             setUserLocation(newLocation);
             
@@ -336,21 +331,19 @@ function MapComponent() {
                 longitude: longitude,
                 latitude: latitude
               };
-              
+  
               const markerSymbol = {
-                type: "simple-marker",
-                color: [0, 102, 255],
-                outline: {
-                  color: [255, 255, 255],
-                  width: 2
-                }
+                type: "picture-marker",  // Cambia il tipo a "picture-marker"
+                url: "/marker.png",  // Sostituisci con il percorso dell'immagine PNG
+                width: "40px",  // Imposta la larghezza desiderata
+                height: "45px"  // Imposta l'altezza desiderata
               };
-              
+  
               const userLocationGraphic = new Graphic({
                 geometry: point,
                 symbol: markerSymbol
               });
-              
+  
               mapViewRef.current.graphics.removeAll();
               mapViewRef.current.graphics.add(userLocationGraphic);
               mapViewRef.current.center = [longitude, latitude];
@@ -370,6 +363,7 @@ function MapComponent() {
       }
     });
   };
+  
 
   const findNearestBridge = async () => {
     try {
@@ -416,14 +410,12 @@ function MapComponent() {
           mapViewRef.current.graphics.remove(highlightGraphicRef.current);
         }
   
-        const markerSymbol = {
-          type: "simple-marker",
-          color: [226, 119, 40],
-          outline: {
-            color: [255, 255, 255],
-            width: 2
-          }
-        };
+              const markerSymbol = {
+                type: "picture-marker",  // Cambia il tipo a "picture-marker"
+                url: "/marker.png",  // Sostituisci con il percorso dell'immagine PNG
+                width: "40px",  // Imposta la larghezza desiderata
+                height: "45px"  // Imposta l'altezza desiderata
+              };
   
         const pointGraphic = new Graphic({
           geometry: nearestBridge.geometry,
@@ -529,88 +521,24 @@ function MapComponent() {
   };
   
   return (
-    <div style={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
-      {!isAdmin ? (
-        <>
-          <div style={{ display: 'flex', height: '100%' }}>
-            <div ref={mapRef} style={{ flex: 1 }} />
-            <div style={{ flex: 1, padding: '20px', backgroundColor: '#f4f4f4', overflowY: 'auto' }}>
-              {selectedBridge ? (
-                <div>
-                  <h2>{selectedBridge.name}</h2>
-                  <p>{sanitizeText(selectedBridge.description)}</p>
-                  <div>
-                    {bridgeImages.length > 0 ? (
-                      bridgeImages.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image.url}
-                          alt={image.alt}
-                          style={{ maxWidth: '100%', marginBottom: '10px' }}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = 'imageerror.png';
-                          }}
-                        />
-                      ))
-                    ) : (
-                      <p>No images available, upload one!</p>
-                    )}
-                  </div>
-                  <input 
-                    type="file" 
-                    id="fileUpload" 
-                    style={{ display: 'none' }} 
-                    onChange={handleFileUpload} 
-                  />
-                  <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
-                    Choose file to upload
-                  </label>
-                </div>
-              ) : (
-                <p>Select a bridge on the map to see details</p>
-              )}
-              <button onClick={showUserLocation}>Show My Location</button>
-              <button onClick={handleAdminLogin}>Admin Login</button>
-              <button onClick={findNearestBridge}>Trova il ponte più vicino</button>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div style={{ padding: '20px', backgroundColor: '#f4f4f4', overflowY: 'auto', height: '100%' }}>
-          <h2>Admin Panel</h2>
-          <button onClick={handleAdminLogout}>Back to Main Page</button>
-          
-          <div style={{ marginTop: '20px' }}>
-            <h3>Upload Image Directly</h3>
-            <select 
-              value={adminSelectedBridge} 
-              onChange={(e) => setAdminSelectedBridge(e.target.value)}
-              style={{ marginRight: '10px' }}
-            >
-              <option value="">Select a bridge</option>
-              {bridges.map(bridge => (
-                <option key={bridge.id} value={bridge.id}>{bridge.name}</option>
-              ))}
-            </select>
-            <input 
-              type="file" 
-              onChange={handleAdminFileUpload}
-              disabled={!adminSelectedBridge}
-            />
-          </div>
-
-          <h3>Pending Images</h3>
-          {pendingImages.map((image, index) => (
-            <div key={index} style={{ marginBottom: '20px' }}>
-              <img src={image.url} alt="Pending" style={{ maxWidth: '100%' }} />
-              <button onClick={() => handleImageApproval(image.key, true)}>Approve</button>
-              <button onClick={() => handleImageApproval(image.key, false)}>Reject</button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <MapComponentUI
+      mapRef={mapRef}
+      bridges={bridges}
+      selectedBridge={selectedBridge}
+      bridgeImages={bridgeImages}
+      isAdmin={isAdmin}
+      pendingImages={pendingImages}
+      handleFileUpload={handleFileUpload}
+      handleAdminLogin={handleAdminLogin}
+      handleImageApproval={handleImageApproval}
+      adminSelectedBridge={adminSelectedBridge}
+      setAdminSelectedBridge={setAdminSelectedBridge}
+      sanitizeText={sanitizeText}
+      showUserLocation= {showUserLocation}
+      findNearestBridge= {findNearestBridge}
+      handleAdminLogout = {handleAdminLogout}
+      handleAdminFileUpload = {handleAdminFileUpload}
+    />
   );
 }
 
