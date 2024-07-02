@@ -67,7 +67,7 @@ function MapComponentUI({
           style={{ 
             width: '99%',
             height: '99%',
-            border: '1px solid #B91135',
+            border: '2px solid #B91135',
             transition: 'width 0.5s ease'
           }} 
         />

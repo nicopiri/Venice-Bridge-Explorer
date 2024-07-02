@@ -334,7 +334,7 @@ function MapComponent() {
   
               const markerSymbol = {
                 type: "picture-marker",  // Cambia il tipo a "picture-marker"
-                url: "/marker.png",  // Sostituisci con il percorso dell'immagine PNG
+                url: "/mask_marker.png",  // Sostituisci con il percorso dell'immagine PNG
                 width: "40px",  // Imposta la larghezza desiderata
                 height: "45px"  // Imposta l'altezza desiderata
               };
