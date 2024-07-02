@@ -96,9 +96,9 @@ function MapComponent() {
                 // Definisci il simbolo del marker con un'immagine
                 const markerSymbol = {
                   type: "picture-marker",
-                  url: "/dock_outlined.png",  // Percorso relativo alla root del server
-                  width: "20px",  // Imposta la larghezza desiderata
-                  height: "60px"  // Imposta l'altezza desiderata
+                  url: "/outlined_bridge.png",  // Percorso relativo alla root del server
+                  width: "65px",  // Imposta la larghezza desiderata
+                  height: "40px"  // Imposta l'altezza desiderata
                 };
   
                 const pointGraphic = new Graphic({
@@ -412,9 +412,9 @@ function MapComponent() {
   
               const markerSymbol = {
                 type: "picture-marker",  // Cambia il tipo a "picture-marker"
-                url: "/dock_outlined.png",  // Sostituisci con il percorso dell'immagine PNG
-                width: "20px",  // Imposta la larghezza desiderata
-                height: "60px"  // Imposta l'altezza desiderata
+                url: "/outlined_bridge.png",  // Sostituisci con il percorso dell'immagine PNG
+                width: "65px",  // Imposta la larghezza desiderata
+                height: "40px"  // Imposta l'altezza desiderata
               };
   
         const pointGraphic = new Graphic({

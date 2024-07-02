@@ -29,7 +29,7 @@ function MapComponentUI({
     }
   }, [selectedBridge]);
 
-  const mapWidth = `calc(100% - ${rightPanelWidth})`;
+  const mapWidth = `calc(98% - ${rightPanelWidth})`;
 
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
@@ -51,17 +51,27 @@ function MapComponentUI({
         </h1>
       </header>
       <div 
-        ref={mapRef} 
-        style={{ 
-          position: 'absolute', 
-          top: '60px', 
-          left: 0, 
-          width: mapWidth, 
-          height: 'calc(100% - 60px)', 
-          transition: 'width 0.3s ease', 
-          border: '15px solid #F5F2E6' // Cornice sottile attorno alla mappa
-        }} 
-      />
+        style={{
+          position: 'absolute',
+          top: '60px',
+          left: 0,
+          width: mapWidth,
+          height: 'calc(100% - 60px)',
+          padding: '15px', // Aggiunge spazio per il bordo esterno
+          boxSizing: 'border-box',
+          backgroundColor: '#F5F2E6' 
+        }}
+      >
+        <div 
+          ref={mapRef} 
+          style={{ 
+            width: '99%',
+            height: '99%',
+            border: '1px solid #B91135', // Cornice interna attorno alla mappa
+            transition: 'width 0.5s ease'
+          }} 
+        />
+      </div>
       <div
         style={{
           position: 'absolute',
@@ -72,15 +82,15 @@ function MapComponentUI({
           backgroundColor: '#F5F2E6',
           overflowY: 'auto',
           padding: '20px',
-          transition: 'width 0.3s ease' // Aggiunge una transizione fluida
+          transition: 'width 0.5s ease' // Aggiunge una transizione fluida
         }}
       >
         {!isAdmin ? (
           <>
             {selectedBridge ? (
               <div>
-                <h2>{selectedBridge.name}</h2>
-                <p>{sanitizeText(selectedBridge.description)}</p>
+                <h2 style={{ fontFamily: 'Arial, sans-serif' }}>{selectedBridge.name}</h2> {/* Cambia font del nome del ponte */}
+                <p style={{ fontFamily: 'Arial, sans-serif' }}>{sanitizeText(selectedBridge.description)}</p> {/* Cambia font della descrizione del ponte */}
                 <div>
                     {bridgeImages.length > 0 ? (
                         bridgeImages.map((image, index) => (
@@ -101,7 +111,7 @@ function MapComponentUI({
                         />
                         ))
                     ) : (
-                        <p>No images available, upload one!</p>
+                        <p style={{ fontFamily: 'Arial, sans-serif' }}>No images available, upload one!</p>
                     )}
                 </div>
 
@@ -111,34 +121,34 @@ function MapComponentUI({
                   style={{ display: 'none' }} 
                   onChange={handleFileUpload} 
                 />
-                <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}>
+                <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline', fontFamily: 'Arial, sans-serif' }}>
                   Choose file to upload
                 </label>
               </div>
             ) : (
-              <p>Select a bridge on the map to see details</p>
+              <p style={{ fontFamily: 'Arial, sans-serif' }}>Select a bridge on the map to see details</p>
             )}
             <div style={buttonContainerStyle}>
-              <button style={vintageButtonStyle} onClick={findNearestBridge}>find Nearest Bridge</button>
+              <button style={vintageButtonStyle} onClick={findNearestBridge}>Find Nearest Bridge</button>
               <button style={vintageButtonStyle} onClick={showUserLocation}>Show My Location</button>
               <button style={vintageButtonStyle} onClick={handleAdminLogin}>Admin Login</button>
             </div>
           </>
         ) : (
           <div>
-            <h2>Admin Panel</h2>
+            <h2 style={{ fontFamily: 'Arial, sans-serif' }}>Admin Panel</h2> 
             <button style={vintageButtonStyle} onClick={handleAdminLogout}>Back to Main Page</button>
             
             <div style={{ marginTop: '20px' }}>
-              <h3>Upload Image Directly</h3>
+              <h3 style={{ fontFamily: 'Arial, sans-serif' }}>Upload Image Directly</h3> 
               <select 
                 value={adminSelectedBridge} 
                 onChange={(e) => setAdminSelectedBridge(e.target.value)}
-                style={{ marginRight: '10px' }}
+                style={{ marginRight: '10px', fontFamily: 'Arial, sans-serif' }} 
               >
                 <option value="">Select a bridge</option>
                 {bridges.map(bridge => (
-                  <option key={bridge.id} value={bridge.id}>{bridge.name}</option>
+                  <option key={bridge.id} value={bridge.id} style={{ fontFamily: 'Arial, sans-serif' }}>{bridge.name}</option>
                 ))}
               </select>
               <input 
@@ -148,7 +158,7 @@ function MapComponentUI({
               />
             </div>
 
-            <h3>Pending Images</h3>
+            <h3 style={{ fontFamily: 'Arial, sans-serif' }}>Pending Images</h3> {/* Cambia font */}
             {pendingImages.map((image, index) => (
               <div key={index} style={{ marginBottom: '20px' }}>
                 <img src={image.url} alt="Pending" style={{ maxWidth: '100%' }} />
@@ -178,7 +188,7 @@ const vintageButtonStyle = {
   textAlign: 'center',
   textDecoration: 'none',
   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Ombra leggera
-  transition: 'background-color 0.3s, color 0.3s',
+  transition: 'background-color 0.5s, color 0.5s',
   marginBottom: '10px', // Spazio tra i pulsanti
 };
 
