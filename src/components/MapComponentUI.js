@@ -57,7 +57,7 @@ function MapComponentUI({
           left: 0,
           width: mapWidth,
           height: 'calc(100% - 60px)',
-          padding: '15px', // Aggiunge spazio per il bordo esterno
+          padding: '15px',
           boxSizing: 'border-box',
           backgroundColor: '#F5F2E6' 
         }}
@@ -67,7 +67,7 @@ function MapComponentUI({
           style={{ 
             width: '99%',
             height: '99%',
-            border: '1px solid #B91135', // Cornice interna attorno alla mappa
+            border: '1px solid #B91135',
             transition: 'width 0.5s ease'
           }} 
         />
@@ -78,19 +78,19 @@ function MapComponentUI({
           top: '60px',
           right: 0,
           width: rightPanelWidth,
-          height: 'calc(100% - 60px)',
+          height: 'calc(95% - 60px)',
           backgroundColor: '#F5F2E6',
           overflowY: 'auto',
           padding: '20px',
-          transition: 'width 0.5s ease' // Aggiunge una transizione fluida
+          transition: 'width 0.5s ease'
         }}
       >
         {!isAdmin ? (
           <>
             {selectedBridge ? (
               <div>
-                <h2 style={{ fontFamily: 'Arial, sans-serif' }}>{selectedBridge.name}</h2> {/* Cambia font del nome del ponte */}
-                <p style={{ fontFamily: 'Arial, sans-serif' }}>{sanitizeText(selectedBridge.description)}</p> {/* Cambia font della descrizione del ponte */}
+                <h2 style={{ fontFamily: 'Arial, sans-serif' }}>{selectedBridge.name}</h2>
+                <p style={{ fontFamily: 'Arial, sans-serif' }}>{sanitizeText(selectedBridge.description)}</p>
                 <div>
                     {bridgeImages.length > 0 ? (
                         bridgeImages.map((image, index) => (
@@ -99,10 +99,10 @@ function MapComponentUI({
                             src={image.url}
                             alt={image.alt}
                             style={{ 
-                            maxWidth: '50%',  // Imposta una larghezza massima per le immagini
-                            maxHeight: '300px', // Imposta un'altezza massima per le immagini
+                            maxWidth: '50%',  
+                            maxHeight: '300px',
                             marginBottom: '10px',
-                            objectFit: 'fit' // Mantiene le proporzioni dell'immagine
+                            objectFit: 'fit'
                             }}
                             onError={(e) => {
                             e.target.onerror = null;
@@ -121,7 +121,7 @@ function MapComponentUI({
                   style={{ display: 'none' }} 
                   onChange={handleFileUpload} 
                 />
-                <label htmlFor="fileUpload" style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline', fontFamily: 'Arial, sans-serif' }}>
+                <label htmlFor="fileUpload" style={{ ...vintageButtonStyle, display: 'inline-block' }}>
                   Choose file to upload
                 </label>
               </div>
@@ -155,10 +155,11 @@ function MapComponentUI({
                 type="file" 
                 onChange={handleAdminFileUpload}
                 disabled={!adminSelectedBridge}
+                style={{ display: 'inline-block' }}
               />
             </div>
 
-            <h3 style={{ fontFamily: 'Arial, sans-serif' }}>Pending Images</h3> {/* Cambia font */}
+            <h3 style={{ fontFamily: 'Arial, sans-serif' }}>Pending Images</h3> 
             {pendingImages.map((image, index) => (
               <div key={index} style={{ marginBottom: '20px' }}>
                 <img src={image.url} alt="Pending" style={{ maxWidth: '100%' }} />
@@ -182,21 +183,21 @@ const vintageButtonStyle = {
   borderRadius: '5px',
   color: '#B91135',
   cursor: 'pointer',
-  fontFamily: 'Bebas Neue, sans-serif', // Font vintage
+  fontFamily: 'Bebas Neue, sans-serif', 
   fontSize: '16px',
   padding: '10px 20px',
   textAlign: 'center',
   textDecoration: 'none',
-  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', // Ombra leggera
+  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
   transition: 'background-color 0.5s, color 0.5s',
-  marginBottom: '10px', // Spazio tra i pulsanti
+  marginBottom: '10px',
 };
 
 // Contenitore per i pulsanti
 const buttonContainerStyle = {
   display: 'flex',
   flexDirection: 'column',
-  gap: '10px', // Spazio tra i pulsanti
+  gap: '10px',
 };
 
 export default MapComponentUI;
