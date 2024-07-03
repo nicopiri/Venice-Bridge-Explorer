@@ -89,7 +89,13 @@ function MapComponentUI({
           <>
             {selectedBridge ? (
               <div>
-                <h1 style={{ fontFamily: 'Great Vibes, cursive' }}>{selectedBridge.name}</h1>
+                <h1 style={{ 
+                  fontFamily: 'Great Vibes, cursive', 
+                  borderBottom: '2px solid #B91135',
+                  paddingBottom: '5px'
+                }}>
+                  {selectedBridge.name}
+                </h1>
                 <div style={{                 
                   padding: '10px',
                   backgroundColor: '#F3F0E2',
@@ -131,12 +137,18 @@ function MapComponentUI({
                   onChange={handleFileUpload} 
                 />
                 <label htmlFor="fileUpload" style={{ ...vintageButtonStyle, display: 'inline-block' }}>
-                  Choose file to upload
+                  Choose a photo to upload
                 </label>
 
                 {/* Street View iFrame */}
                 <div style={{ marginTop: '20px' }}>
-                  <h2>Street View</h2>
+                <h1 style={{ 
+                  fontFamily: 'Great Vibes, cursive',
+                  borderBottom: '2px solid #B91135',
+                  paddingBottom: '5px',
+                }}>
+                  Street View
+                </h1>
                   <iframe
                     src={`https://www.google.com/maps/embed?pb=!4v1625024000000!6m8!1m7!1sAF1QipNMrUOxK8HslcNX_Mjj8U8TE1V1yKJOJgIHrjmR!2m2!1d${selectedBridge.latitude}!2d${selectedBridge.longitude}!3f200.73!4f0!5f0.8!6i1`}
                     width="100%"
@@ -193,6 +205,21 @@ function MapComponentUI({
           </div>
         )}
       </div>
+      <footer style={{
+      position: 'absolute',
+      bottom: '-53px',
+      left: 0,
+      width: '100%',
+      backgroundColor: '#F5F2E6',
+      borderTop: '1px solid #B91135',
+      padding: '10px',
+      textAlign: 'center',
+      fontFamily: 'Cabin, sans-serif',
+      fontSize: '14px',
+      color: '#B91135'
+    }}>
+      Created by Niccolò Pirillo under SerenDPT
+    </footer>
     </div>
   );
 }
