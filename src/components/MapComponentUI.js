@@ -133,6 +133,18 @@ function MapComponentUI({
                 <label htmlFor="fileUpload" style={{ ...vintageButtonStyle, display: 'inline-block' }}>
                   Choose file to upload
                 </label>
+
+                {/* Street View iFrame */}
+                <div style={{ marginTop: '20px' }}>
+                  <h2>Street View</h2>
+                  <iframe
+                    src={`https://www.google.com/maps/embed?pb=!4v1625024000000!6m8!1m7!1sAF1QipNMrUOxK8HslcNX_Mjj8U8TE1V1yKJOJgIHrjmR!2m2!1d${selectedBridge.latitude}!2d${selectedBridge.longitude}!3f200.73!4f0!5f0.8`}
+                    width="100%"
+                    height="300px"
+                    style={{ border: 'none' }}
+                    title="Street View"
+                  />
+                </div>
               </div>
             ) : (
               <p style={{ fontFamily: 'Cabin, sans-serif' }}>Select a bridge on the map to see details</p>

@@ -26,8 +26,8 @@ function MapComponent() {
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
   const mapRef = useRef(null);
+
   const initializeMap = useCallback(() => {
-  
     const webmap = new WebMap({
       portalItem: {
         id: "4ea81c99765144f6a522ecfa429518e0"
@@ -72,7 +72,7 @@ function MapComponent() {
             // Usa l'ObjectId per eseguire una query e ottenere tutti gli attributi
             const query = featureLayer.createQuery();
             query.objectIds = [graphicHit.graphic.attributes.ObjectId];
-            query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History"];
+            query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History", "data_Latitude", "data_Longitude"];
   
             try {
               const queryResult = await featureLayer.queryFeatures(query);
@@ -83,11 +83,14 @@ function MapComponent() {
                 const selectedBridgeInfo = {
                   id: feature.attributes.birth_certificate_birthID,
                   name: feature.attributes.data_Bridge_Name,
-                  description: feature.attributes.data_History
+                  description: feature.attributes.data_History,
+                  latitude: feature.attributes.data_Latitude,
+                  longitude: feature.attributes.data_Longitude,
+                  url: 'https://www.google.com/maps/embed?pb=!4v1625024000000!6m8!1m7!1sAF1QipNMrUOxK8HslcNX_Mjj8U8TE1V1yKJOJgIHrjmR!2m2!1d41.8902102!2d12.4922309!3f200.73!4f0!5f0.8'
+                  //url : `//www.google.com/maps/@?api=1&map_action=pano&viewpoint=${feature.attributes.data_Latitude},${feature.attributes.data_Longitude}`
                 };
   
                 setSelectedBridge(selectedBridgeInfo);
-  
                 // Rimuovi eventuali grafiche di evidenziazione precedenti
                 if (highlightGraphicRef.current) {
                   view.graphics.remove(highlightGraphicRef.current);
@@ -134,6 +137,7 @@ function MapComponent() {
       }
     });
   }, []);
+  
   
 
   useEffect(() => {
