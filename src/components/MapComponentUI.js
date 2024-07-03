@@ -207,12 +207,12 @@ function MapComponentUI({
       </div>
       <footer style={{
       position: 'absolute',
-      bottom: '-53px',
+      bottom: '-90px',
       left: 0,
       width: '100%',
       backgroundColor: '#F5F2E6',
       borderTop: '1px solid #B91135',
-      padding: '10px',
+      padding: '30px',
       textAlign: 'center',
       fontFamily: 'Cabin, sans-serif',
       fontSize: '14px',
