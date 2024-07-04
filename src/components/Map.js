@@ -11,8 +11,8 @@ const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
 const region = process.env.REACT_APP_AWS_REGION;
 
 
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'password123';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
 function MapComponent() {
   const [selectedBridge, setSelectedBridge] = useState(null);
@@ -85,9 +85,7 @@ function MapComponent() {
                   name: feature.attributes.data_Bridge_Name,
                   description: feature.attributes.data_History,
                   latitude: feature.attributes.data_Latitude,
-                  longitude: feature.attributes.data_Longitude,
-                  url: 'https://www.google.com/maps/embed?pb=!4v1625024000000!6m8!1m7!1sAF1QipNMrUOxK8HslcNX_Mjj8U8TE1V1yKJOJgIHrjmR!2m2!1d41.8902102!2d12.4922309!3f200.73!4f0!5f0.8'
-                  //url : `//www.google.com/maps/@?api=1&map_action=pano&viewpoint=${feature.attributes.data_Latitude},${feature.attributes.data_Longitude}`
+                  longitude: feature.attributes.data_Longitude
                 };
   
                 setSelectedBridge(selectedBridgeInfo);
@@ -99,9 +97,9 @@ function MapComponent() {
                 // Definisci il simbolo del marker con un'immagine
                 const markerSymbol = {
                   type: "picture-marker",
-                  url: "/outlined_bridge.png",  // Percorso relativo alla root del server
-                  width: "65px",  // Imposta la larghezza desiderata
-                  height: "40px"  // Imposta l'altezza desiderata
+                  url: "/outlined_bridge.png", 
+                  width: "65px", 
+                  height: "40px"  
                 };
   
                 const pointGraphic = new Graphic({
