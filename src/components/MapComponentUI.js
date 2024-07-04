@@ -224,7 +224,7 @@ function MapComponentUI({
   );
 }
 
-// Stile vintage per i pulsanti
+
 const vintageButtonStyle = {
   backgroundColor: '#F5F2E6',
   border: '2px solid #B91135',
@@ -241,7 +241,7 @@ const vintageButtonStyle = {
   marginBottom: '10px',
 };
 
-// Contenitore per i pulsanti
+
 const buttonContainerStyle = {
   display: 'flex',
   flexDirection: 'column',

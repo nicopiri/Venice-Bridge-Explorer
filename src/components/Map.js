@@ -335,10 +335,10 @@ function MapComponent() {
               };
   
               const markerSymbol = {
-                type: "picture-marker",  // Cambia il tipo a "picture-marker"
-                url: "/mask_marker.png",  // Sostituisci con il percorso dell'immagine PNG
-                width: "40px",  // Imposta la larghezza desiderata
-                height: "45px"  // Imposta l'altezza desiderata
+                type: "picture-marker",
+                url: "/mask_marker.png", 
+                width: "40px", 
+                height: "45px"  
               };
   
               const userLocationGraphic = new Graphic({
@@ -413,10 +413,10 @@ function MapComponent() {
         }
   
               const markerSymbol = {
-                type: "picture-marker",  // Cambia il tipo a "picture-marker"
-                url: "/outlined_bridge.png",  // Sostituisci con il percorso dell'immagine PNG
-                width: "65px",  // Imposta la larghezza desiderata
-                height: "40px"  // Imposta l'altezza desiderata
+                type: "picture-marker",  
+                url: "/outlined_bridge.png", 
+                width: "65px", 
+                height: "40px"  
               };
   
         const pointGraphic = new Graphic({
@@ -500,7 +500,7 @@ function MapComponent() {
     'ÃŒ': 'Ì',
     'Ã':  'Ò',
     'Ã™': 'Ù'
-    // Aggiungi altri mapping se necessario
+
   };
   
   const sanitizeText = (text) => {
