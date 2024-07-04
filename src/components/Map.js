@@ -6,13 +6,13 @@ import axios from 'axios';
 import WebMap from "@arcgis/core/WebMap";
 import MapComponentUI from './MapComponentUI';
 
+
+
 const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
 const region = process.env.REACT_APP_AWS_REGION;
-
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const admin_username = process.env.REACT_APP_ADMIN_USERNAME;
+const admin_password = process.env.REACT_APP_ADMIN_PASSWORD;
 
 function MapComponent() {
   const [selectedBridge, setSelectedBridge] = useState(null);
@@ -230,7 +230,7 @@ function MapComponent() {
     const username = prompt('Enter admin username:');
     const password = prompt('Enter admin password:');
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    if (username === admin_username && password === admin_password) {
       setIsAdmin(true);
       loadPendingImages();
     } else {
