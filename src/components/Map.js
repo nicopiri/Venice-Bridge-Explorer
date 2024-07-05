@@ -7,7 +7,7 @@ import WebMap from "@arcgis/core/WebMap";
 import MapComponentUI from './MapComponentUI';
 
 
-
+// Environment variables for AWS configuration and admin credentials
 const accessKeyId = process.env.REACT_APP_AWS_ACCESS_KEY;
 const secretAccessKey = process.env.REACT_APP_AWS_SECRET_ACCESS_KEY;
 const region = process.env.REACT_APP_AWS_REGION;
@@ -15,6 +15,7 @@ const admin_username = process.env.REACT_APP_ADMIN_USERNAME;
 const admin_password = process.env.REACT_APP_ADMIN_PASSWORD;
 
 function MapComponent() {
+  // State variables for the component
   const [selectedBridge, setSelectedBridge] = useState(null);
   const [bridgeImages, setBridgeImages] = useState([]);
   const [userIP, setUserIP] = useState(null);
@@ -23,17 +24,20 @@ function MapComponent() {
   const [bridges, setBridges] = useState([]);
   const [adminSelectedBridge, setAdminSelectedBridge] = useState('');
   const [userLocation, setUserLocation] = useState(null);
+
+  // Refs for managing map and graphics
   const highlightGraphicRef = useRef(null);
   const mapViewRef = useRef(null);
   const mapRef = useRef(null);
-
+  
+  // Function to initialize the map
   const initializeMap = useCallback(() => {
     const webmap = new WebMap({
       portalItem: {
         id: "4ea81c99765144f6a522ecfa429518e0"
       }
     });
-  
+    
     const view = new MapView({
       container: mapRef.current,
       map: webmap,
@@ -45,7 +49,8 @@ function MapComponent() {
     });
   
     mapViewRef.current = view;
-  
+    
+    // Once the view is ready, fetch and set bridge data
     view.when(() => {
       const featureLayer = webmap.layers.find(layer => layer.type === "feature");
   
@@ -58,9 +63,11 @@ function MapComponent() {
           bridgeData.sort((a, b) => a.name.localeCompare(b.name));
           setBridges(bridgeData);
         });
-  
+        
+        // Set highlight options
         featureLayer.highlightOptions = { color: [0, 0, 0, 0], fillOpacity: 0 };
-  
+        
+         // Handle map click events to select bridges
         view.on("click", async (event) => {
           const featureLayer = view.map.layers.find(layer => layer.type === "feature");
   
@@ -69,14 +76,14 @@ function MapComponent() {
           const graphicHit = results.find(result => result.graphic.layer === featureLayer);
   
           if (graphicHit) {
-            // Usa l'ObjectId per eseguire una query e ottenere tutti gli attributi
+             // Query detailed information for the selected bridge
             const query = featureLayer.createQuery();
             query.objectIds = [graphicHit.graphic.attributes.ObjectId];
             query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History", "data_Latitude", "data_Longitude"];
   
             try {
               const queryResult = await featureLayer.queryFeatures(query);
-  
+              
               if (queryResult.features.length > 0) {
                 const feature = queryResult.features[0];
   
@@ -89,12 +96,12 @@ function MapComponent() {
                 };
   
                 setSelectedBridge(selectedBridgeInfo);
-                // Rimuovi eventuali grafiche di evidenziazione precedenti
+                // Add a marker graphic to highlight the selected bridge
                 if (highlightGraphicRef.current) {
                   view.graphics.remove(highlightGraphicRef.current);
                 }
   
-                // Definisci il simbolo del marker con un'immagine
+                // Add a marker graphic to highlight the selected bridge
                 const markerSymbol = {
                   type: "picture-marker",
                   url: "/outlined_bridge.png", 
@@ -110,9 +117,10 @@ function MapComponent() {
                 view.graphics.add(pointGraphic);
                 highlightGraphicRef.current = pointGraphic;
   
-                // Centra la vista sul ponte selezionato
+                // Center the view on the selected bridge
                 view.goTo({ target: feature.geometry, zoom: view.zoom });
-  
+                
+                // Load images associated with the selected bridge
                 loadBridgeImages(feature.attributes.birth_certificate_birthID);
               } else {
                 console.log("No features found in query result");
@@ -137,7 +145,7 @@ function MapComponent() {
   }, []);
   
   
-
+  // Fetch the user's IP address and initialize the map when the component mounts
   useEffect(() => {
     initializeMap();
 
@@ -150,7 +158,7 @@ function MapComponent() {
       });
   }, [initializeMap]);
 
-
+  // Function to load images for a specific bridge from AWS S3
   const loadBridgeImages = async (bridgeID) => {
     const s3 = new AWS.S3({
       accessKeyId: accessKeyId,
@@ -176,6 +184,7 @@ function MapComponent() {
     }
   };
 
+  // Handle file upload by users
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file || !selectedBridge || !userIP) return;
@@ -226,6 +235,7 @@ function MapComponent() {
     }
   };
 
+  // Handle admin login
   const handleAdminLogin = () => {
     const username = prompt('Enter admin username:');
     const password = prompt('Enter admin password:');
@@ -238,6 +248,7 @@ function MapComponent() {
     }
   };
 
+  // Load pending images for admin review
   const loadPendingImages = async () => {
     const s3 = new AWS.S3({
       accessKeyId: accessKeyId,
@@ -261,7 +272,8 @@ function MapComponent() {
       console.error('Error loading pending images:', err);
     }
   };
-
+  
+   // Approve pending image and move it to the main folder
   const handleImageApproval = async (imageKey, approved) => {
     const s3 = new AWS.S3({
       accessKeyId: accessKeyId,
