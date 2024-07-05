@@ -217,7 +217,8 @@ function MapComponentUI({
                     marginTop: '20px',
                   }}
                 >
-                  <p style={{ fontFamily: 'Cabin, sans-serif' }}><strong>Venice Bridge Explorer</strong> is a digital homage to the bridges of Venice. It transforms static map data into an engaging, <strong>interactive experience</strong> that invites users to explore, learn, and contribute. Whether you’re an enthusiast of Venetian history, a casual explorer, or a dedicated researcher, this App offers a unique and valuable perspective on of the world’s most iconic city.
+                  <p style={{ fontFamily: 'Cabin, sans-serif' }}><strong>Venice Bridge Explorer</strong> is a digital homage to the bridges of Venice. It transforms static map data into an engaging, <strong>interactive experience</strong> that invites users to explore, learn, and contribute. 
+                  Whether you’re an enthusiast of Venetian history, a casual explorer, or a dedicated researcher, this App offers a unique and valuable perspective on of the world’s most iconic city.
                   </p>
                   <p style={{ fontFamily: 'Cabin, sans-serif' }}>
                     Embark on your virtual <strong>journey through Venice’s bridges</strong> and discover the stories that span centuries, all brought to life through the synergy of cutting-edge <strong>technology</strong> and rich <strong>cultural heritage</strong>.

@@ -392,7 +392,7 @@ function MapComponent() {
   
       const featureLayer = mapViewRef.current.map.layers.getItemAt(0);
       const query = featureLayer.createQuery();
-      query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History"];
+      query.outFields = ["birth_certificate_birthID", "data_Bridge_Name", "data_History", "data_Latitude", "data_Longitude"];
       query.returnGeometry = true;
   
       const results = await featureLayer.queryFeatures(query);
@@ -417,7 +417,10 @@ function MapComponent() {
         setSelectedBridge({
           id: nearestBridge.attributes.birth_certificate_birthID,
           name: nearestBridge.attributes.data_Bridge_Name,
-          description: nearestBridge.attributes.data_History
+          description: nearestBridge.attributes.data_History,
+          latitude: nearestBridge.attributes.data_Latitude,
+          longitude: nearestBridge.attributes.data_Longitude
+          
         });
   
         if (highlightGraphicRef.current) {
