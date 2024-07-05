@@ -154,21 +154,27 @@ function MapComponentUI({
                       paddingBottom: '5px',
                     }}
                   >
-                    Street View
+                    Bridge View
                   </h1>
                   <iframe
                     src={`https://www.google.com/maps/embed?pb=!4v1625024000000!6m8!1m7!1sAF1QipNMrUOxK8HslcNX_Mjj8U8TE1V1yKJOJgIHrjmR!2m2!1d${selectedBridge.latitude}!2d${selectedBridge.longitude}!3f200.73!4f0!5f0.8!6i1`}
                     width="100%"
                     height="300px"
                     style={{ border: 'none' }}
-                    title="Street View"
+                    title="Bridge View"
                   />
                 </div>
-              </div>
-            ) : (
-              <p style={{ fontFamily: 'Cabin, sans-serif' }}>Select a bridge on the map to see details</p>
-            )}
-            <div style={buttonContainerStyle}>
+                <p
+              style={{
+                padding: '10px',
+                backgroundColor: '#F3F0E2',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                marginTop: '20px',
+                fontFamily: 'Cabin, sans-serif'
+              }}
+              >Click anywhere on the map to close the details!
+              </p>
+                <div style={buttonContainerStyle}>
               <button style={vintageButtonStyle} onClick={findNearestBridge}>
                 Find Nearest Bridge
               </button>
@@ -179,6 +185,97 @@ function MapComponentUI({
                 Admin Login
               </button>
             </div>
+              </div>
+            ) : (
+              <div>
+              <p
+              style={{
+                padding: '10px',
+                backgroundColor: '#F3F0E2',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                marginTop: '20px',
+                fontFamily: 'Cabin, sans-serif'
+              }}
+              ><strong>Select a bridge on the map</strong> to open the details!
+              </p>
+              <div style={buttonContainerStyle}>
+                <button style={vintageButtonStyle} onClick={findNearestBridge}>
+                  Find Nearest Bridge
+                </button>
+                <button style={vintageButtonStyle} onClick={showUserLocation}>
+                  Show My Location
+                </button>
+                <button style={vintageButtonStyle} onClick={handleAdminLogin}>
+                  Admin Login
+                </button>
+              </div>
+               <div
+                  style={{
+                    padding: '10px',
+                    backgroundColor: '#F3F0E2',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    marginTop: '20px',
+                  }}
+                >
+                  <p style={{ fontFamily: 'Cabin, sans-serif' }}><strong>Venice Bridge Explorer</strong> is a digital homage to the bridges of Venice. It transforms static map data into an engaging, <strong>interactive experience</strong> that invites users to explore, learn, and contribute. Whether you’re an enthusiast of Venetian history, a casual explorer, or a dedicated researcher, this App offers a unique and valuable perspective on of the world’s most iconic city.
+                  </p>
+                  <p style={{ fontFamily: 'Cabin, sans-serif' }}>
+                    Embark on your virtual <strong>journey through Venice’s bridges</strong> and discover the stories that span centuries, all brought to life through the synergy of cutting-edge <strong>technology</strong> and rich <strong>cultural heritage</strong>.
+                  </p>
+                </div>
+                <footer
+  style={{
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: '80%',
+    backgroundColor: '#F5F2E6',
+    borderTop: '1px solid #B91135',
+    padding: '30px',
+    textAlign: 'center',
+    fontFamily: 'Cabin, sans-serif',
+    fontSize: '14px',
+    color: '#B91135',
+  }}
+>
+  Created by{' '}
+  <a
+    href="https://linktr.ee/niccolopirillo"
+    style={{
+      color: '#B91135',
+      textDecoration: 'underline',
+      fontWeight: 'bold',
+      transition: 'color 0.3s ease',
+    }}
+    target="_blank"
+    rel="noopener noreferrer"
+    onMouseOver={(e) => e.currentTarget.style.color = '#A8001C'}
+    onMouseOut={(e) => e.currentTarget.style.color = '#B91135'}
+  >
+    Niccolò Pirillo
+  </a>{' '}
+  under{' '}
+  <a
+    href="https://www.serendpt.net/"
+    style={{
+      color: '#B91135',
+      textDecoration: 'underline',
+      fontWeight: 'bold',
+      transition: 'color 0.3s ease',
+    }}
+    target="_blank"
+    rel="noopener noreferrer"
+    onMouseOver={(e) => e.currentTarget.style.color = '#A8001C'}
+    onMouseOut={(e) => e.currentTarget.style.color = '#B91135'}
+  >
+    SerenDPT
+  </a>
+</footer>
+
+
+            </div>
+            )}
+
           </>
         ) : (
           <div>
@@ -226,23 +323,7 @@ function MapComponentUI({
           </div>
         )}
       </div>
-      <footer
-        style={{
-          position: 'absolute',
-          bottom: '-90px',
-          left: 0,
-          width: '100%',
-          backgroundColor: '#F5F2E6',
-          borderTop: '1px solid #B91135',
-          padding: '30px',
-          textAlign: 'center',
-          fontFamily: 'Cabin, sans-serif',
-          fontSize: '14px',
-          color: '#B91135',
-        }}
-      >
-        Created by Niccolò Pirillo under SerenDPT
-      </footer>
+    
     </div>
   );
 }
