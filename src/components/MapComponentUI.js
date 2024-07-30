@@ -211,6 +211,7 @@ function MapComponentUI({
               </div>
                <div
                   style={{
+                    top:10,
                     padding: '10px',
                     backgroundColor: '#F3F0E2',
                     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
