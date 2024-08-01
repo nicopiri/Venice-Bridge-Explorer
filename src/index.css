@@ -49,6 +49,7 @@ code {
   .map-container {
     width: 100% !important;
     height: calc(50% - 5px) !important;
+    touch-action: none;
   }
 
   .details-panel {

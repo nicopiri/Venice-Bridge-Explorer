@@ -41,14 +41,21 @@ function MapComponent() {
     const view = new MapView({
       container: mapRef.current,
       map: webmap,
-      center: [12.3350, 45.4350],
-      zoom: 14,
-      constraints: {
-        snapToZoom: false,
-        rotationEnabled: false
+      center: [12.3350, 45.4350], // Coordinates for Venice
+      zoom: 14, // Appropriate zoom level for city view
+      popup: {
+        defaultPopupTemplateEnabled: false
       },
-      navigationMode: "css-transforms"
+      constraints: {
+        snapToZoom: false, // Disables zoom snapping
+        rotationEnabled: false // Disables rotation
+      },
+      navigation: {
+        gamepad: { enabled: false }, // Disables gamepad navigation
+        browserTouchPanEnabled: true // Enables touch panning for better mobile interaction
+      }
     });
+    
   
     mapViewRef.current = view;
     
