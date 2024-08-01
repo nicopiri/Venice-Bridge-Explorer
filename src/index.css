@@ -70,7 +70,7 @@ footer {
   .details-panel {
     width: 90% !important;
     height: calc(70% - 60px) !important;
-    top: calc(50% + 60px) !important;
+    top: calc(50% + 30px) !important;
   }
 
   .details-panel img {
