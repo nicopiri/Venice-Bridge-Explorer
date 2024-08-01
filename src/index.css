@@ -69,7 +69,7 @@ footer {
 
   .details-panel {
     width: 90% !important;
-    height: calc(5% - 60px) !important;
+    height: calc(70% - 60px) !important;
     top: calc(50% + 60px) !important;
   }
 
@@ -80,7 +80,7 @@ footer {
 
   footer {
     width: 90% !important;
-    padding: 20px !important;
-    top: calc(100% + 190px) !important;
+    padding: 25px !important;
+    top: calc(100% + 40px) !important;
   }
 }
