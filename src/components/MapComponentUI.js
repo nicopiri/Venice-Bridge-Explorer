@@ -46,6 +46,7 @@ function MapComponentUI({
           width: '100%',
           zIndex: 1,
         }}
+        className="header"
       >
         <img src="logo_sdpt.png" alt="Company Logo" style={{ height: '40px', marginRight: '20px' }} />
         <h1 style={{ margin: 0, fontFamily: 'Dancing Script, cursive', fontSize: '30px', fontWeight: 'normal' }}>
@@ -63,6 +64,7 @@ function MapComponentUI({
           boxSizing: 'border-box',
           backgroundColor: '#F5F2E6',
         }}
+        className="map-container"
       >
         <div
           ref={mapRef}
@@ -86,6 +88,7 @@ function MapComponentUI({
           padding: '20px',
           transition: 'width 0.5s ease',
         }}
+        className="details-panel"
       >
         {!isAdmin ? (
           <>
@@ -165,53 +168,53 @@ function MapComponentUI({
                   />
                 </div>
                 <p
-              style={{
-                padding: '10px',
-                backgroundColor: '#F3F0E2',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                marginTop: '20px',
-                fontFamily: 'Cabin, sans-serif'
-              }}
-              >Click anywhere on the map to close the details!
-              </p>
+                  style={{
+                    padding: '10px',
+                    backgroundColor: '#F3F0E2',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    marginTop: '20px',
+                    fontFamily: 'Cabin, sans-serif'
+                  }}
+                >Click anywhere on the map to close the details!
+                </p>
                 <div style={buttonContainerStyle}>
-              <button style={vintageButtonStyle} onClick={findNearestBridge}>
-                Find Nearest Bridge
-              </button>
-              <button style={vintageButtonStyle} onClick={showUserLocation}>
-                Show My Location
-              </button>
-              <button style={vintageButtonStyle} onClick={handleAdminLogin}>
-                Admin Login
-              </button>
-            </div>
+                  <button style={vintageButtonStyle} onClick={findNearestBridge}>
+                    Find Nearest Bridge
+                  </button>
+                  <button style={vintageButtonStyle} onClick={showUserLocation}>
+                    Show My Location
+                  </button>
+                  <button style={vintageButtonStyle} onClick={handleAdminLogin}>
+                    Admin Login
+                  </button>
+                </div>
               </div>
             ) : (
               <div>
-              <p
-              style={{
-                padding: '10px',
-                backgroundColor: '#F3F0E2',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                marginTop: '20px',
-                fontFamily: 'Cabin, sans-serif'
-              }}
-              ><strong>Select a bridge on the map</strong> to open the details!
-              </p>
-              <div style={buttonContainerStyle}>
-                <button style={vintageButtonStyle} onClick={findNearestBridge}>
-                  Find Nearest Bridge
-                </button>
-                <button style={vintageButtonStyle} onClick={showUserLocation}>
-                  Show My Location
-                </button>
-                <button style={vintageButtonStyle} onClick={handleAdminLogin}>
-                  Admin Login
-                </button>
-              </div>
-               <div
+                <p
                   style={{
-                    top:10,
+                    padding: '10px',
+                    backgroundColor: '#F3F0E2',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                    marginTop: '20px',
+                    fontFamily: 'Cabin, sans-serif'
+                  }}
+                ><strong>Select a bridge on the map</strong> to open the details!
+                </p>
+                <div style={buttonContainerStyle}>
+                  <button style={vintageButtonStyle} onClick={findNearestBridge}>
+                    Find Nearest Bridge
+                  </button>
+                  <button style={vintageButtonStyle} onClick={showUserLocation}>
+                    Show My Location
+                  </button>
+                  <button style={vintageButtonStyle} onClick={handleAdminLogin}>
+                    Admin Login
+                  </button>
+                </div>
+                <div
+                  style={{
+                    top: 10,
                     padding: '10px',
                     backgroundColor: '#F3F0E2',
                     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
@@ -221,63 +224,58 @@ function MapComponentUI({
                   <p style={{ fontFamily: 'Cabin, sans-serif' }}><strong>Venice Bridge Explorer</strong> is a digital homage to the bridges of Venice. It transforms static map data into an engaging, <strong>interactive experience</strong> that invites users to explore, learn, and contribute. 
                   Whether you’re an enthusiast of Venetian history, a casual explorer, or a dedicated researcher, this App offers a unique and valuable perspective on of the world’s most iconic city.
                   </p>
-                  <p style={{ fontFamily: 'Cabin, sans-serif' }}>
-                    Embark on your virtual <strong>journey through Venice’s bridges</strong> and discover the stories that span centuries, all brought to life through the synergy of cutting-edge <strong>technology</strong> and rich <strong>cultural heritage</strong>.
-                  </p>
                 </div>
                 <footer
-  style={{
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '80%',
-    backgroundColor: '#F5F2E6',
-    borderTop: '1px solid #B91135',
-    padding: '30px',
-    textAlign: 'center',
-    fontFamily: 'Cabin, sans-serif',
-    fontSize: '14px',
-    color: '#B91135',
-  }}
->
-  Created by{' '}
-  <a
-    href="https://linktr.ee/niccolopirillo"
-    style={{
-      color: '#B91135',
-      textDecoration: 'underline',
-      fontWeight: 'bold',
-      transition: 'color 0.3s ease',
-    }}
-    target="_blank"
-    rel="noopener noreferrer"
-    onMouseOver={(e) => e.currentTarget.style.color = '#A8001C'}
-    onMouseOut={(e) => e.currentTarget.style.color = '#B91135'}
-  >
-    Niccolò Pirillo
-  </a>{' '}
-  under{' '}
-  <a
-    href="https://www.serendpt.net/"
-    style={{
-      color: '#B91135',
-      textDecoration: 'underline',
-      fontWeight: 'bold',
-      transition: 'color 0.3s ease',
-    }}
-    target="_blank"
-    rel="noopener noreferrer"
-    onMouseOver={(e) => e.currentTarget.style.color = '#A8001C'}
-    onMouseOut={(e) => e.currentTarget.style.color = '#B91135'}
-  >
-    SerenDPT
-  </a>
-</footer>
-
-
-            </div>
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    width: '80%',
+                    backgroundColor: '#F5F2E6',
+                    borderTop: '1px solid #B91135',
+                    padding: '30px',
+                    textAlign: 'center',
+                    fontFamily: 'Cabin, sans-serif',
+                    fontSize: '14px',
+                    color: '#B91135',
+                  }}
+                  className="footer"
+                >
+                  Created by{' '}
+                  <a
+                    href="https://linktr.ee/niccolopirillo"
+                    style={{
+                      color: '#B91135',
+                      textDecoration: 'underline',
+                      fontWeight: 'bold',
+                      transition: 'color 0.3s ease',
+                    }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onMouseOver={(e) => e.currentTarget.style.color = '#A8001C'}
+                    onMouseOut={(e) => e.currentTarget.style.color = '#B91135'}
+                  >
+                    Niccolò Pirillo
+                  </a>{' '}
+                  under{' '}
+                  <a
+                    href="https://www.serendpt.net/"
+                    style={{
+                      color: '#B91135',
+                      textDecoration: 'underline',
+                      fontWeight: 'bold',
+                      transition: 'color 0.3s ease',
+                    }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onMouseOver={(e) => e.currentTarget.style.color = '#A8001C'}
+                    onMouseOut={(e) => e.currentTarget.style.color = '#B91135'}
+                  >
+                    SerenDPT
+                  </a>
+                </footer>
+              </div>
             )}
-
           </>
         ) : (
           <div>
@@ -325,7 +323,6 @@ function MapComponentUI({
           </div>
         )}
       </div>
-    
     </div>
   );
 }

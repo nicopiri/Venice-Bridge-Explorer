@@ -1,23 +1,11 @@
-/* Importazione di Great Vibes */
+/* Importazione di Font */
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-
-/* Oppure, per Dancing Script */
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&family=Merriweather&family=Raleway&family=Libre+Baskerville&family=Lora&family=Cabin&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap');
-
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
 
 html, body {
@@ -36,4 +24,46 @@ html, body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Media Queries per il Supporto Mobile */
+@media (max-width: 768px) {
+  header {
+    flex-direction: row;
+    align-items: center;
+    
+    padding: 10px;
+  }
+
+  header img {
+    height: 30px; /* Riduci l'altezza dell'icona per schermi più piccoli */
+    margin-right: 10px; /* Riduci il margine destro dell'icona */
+  }
+
+  header h1 {
+    font-size: 24px; /* Riduci la dimensione del font per il titolo */
+    text-align: left; /* Allinea il testo a sinistra */
+    margin: 0; /* Rimuovi eventuali margini aggiuntivi */
+  }
+
+  .map-container {
+    width: 100% !important;
+    height: calc(50% - 5px) !important;
+  }
+
+  .details-panel {
+    width: 90% !important;
+    height: calc(50% - 60px) !important;
+    top: calc(50% + 60px) !important;
+  }
+
+  .details-panel img {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  .footer {
+    width: 100% !important;
+    padding: 20px !important;
+  }
 }
