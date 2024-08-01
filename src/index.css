@@ -69,8 +69,8 @@ footer {
 
   .details-panel {
     width: 90% !important;
-    height: calc(50% - 60px) !important;
-    top: calc(50% + 28px) !important;
+    height: calc(5% - 60px) !important;
+    top: calc(50% + 60px) !important;
   }
 
   .details-panel img {
@@ -79,7 +79,7 @@ footer {
   }
 
   footer {
-    width: 100% !important;
+    width: 90% !important;
     padding: 20px !important;
     top: calc(100% + 190px) !important;
   }
