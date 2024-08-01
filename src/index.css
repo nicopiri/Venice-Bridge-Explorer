@@ -63,14 +63,14 @@ footer {
 
   .map-container {
     width: 100% !important;
-    height: calc(50% - 5px) !important;
+    height: calc(45% - 5px) !important;
     touch-action: none;
   }
 
   .details-panel {
     width: 90% !important;
     height: calc(50% - 60px) !important;
-    top: calc(50% + 60px) !important;
+    top: calc(50% + 28px) !important;
   }
 
   .details-panel img {
