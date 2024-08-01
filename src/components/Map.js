@@ -41,11 +41,13 @@ function MapComponent() {
     const view = new MapView({
       container: mapRef.current,
       map: webmap,
-      center: [12.3350, 45.4350], // Coordinates for Venice
-      zoom: 14, // Appropriate zoom level for city view
-      popup: {
-        defaultPopupTemplateEnabled: false
-      }
+      center: [12.3350, 45.4350],
+      zoom: 14,
+      constraints: {
+        snapToZoom: false,
+        rotationEnabled: false
+      },
+      navigationMode: "css-transforms"
     });
   
     mapViewRef.current = view;
